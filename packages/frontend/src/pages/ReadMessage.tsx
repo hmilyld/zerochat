@@ -86,13 +86,26 @@ export default function ReadMessage() {
       }
 
       const decStr = new TextDecoder().decode(decrypted);
-      if (decStr.startsWith('IMAGE:')) {
+      if (decStr.startsWith('IMAGE:') || decStr.startsWith('IMAGE_TEXT:')) {
+        const isImageText = decStr.startsWith('IMAGE_TEXT:');
+        const startIdx = isImageText ? 11 : 6;
         const nullIdx = decStr.indexOf('\x00');
-        const mimeType = decStr.slice(6, nullIdx);
-        const imgBytes = decrypted.slice(nullIdx + 1);
-        const blob = new Blob([imgBytes], { type: mimeType });
-        setImageUrl(URL.createObjectURL(blob));
-        setStatus('success-image');
+        const mimeType = decStr.slice(startIdx, nullIdx);
+
+        if (isImageText) {
+          const secondNullIdx = decStr.indexOf('\x00', nullIdx + 1);
+          const imgBytes = decrypted.slice(nullIdx + 1, secondNullIdx);
+          const caption = decStr.slice(secondNullIdx + 1);
+          const blob = new Blob([imgBytes], { type: mimeType });
+          setImageUrl(URL.createObjectURL(blob));
+          setContent(caption);
+          setStatus('success-image');
+        } else {
+          const imgBytes = decrypted.slice(nullIdx + 1);
+          const blob = new Blob([imgBytes], { type: mimeType });
+          setImageUrl(URL.createObjectURL(blob));
+          setStatus('success-image');
+        }
       } else {
         setContent(decStr);
         setStatus('success-text');
@@ -129,13 +142,26 @@ export default function ReadMessage() {
       }
 
       const decStr = new TextDecoder().decode(decrypted);
-      if (decStr.startsWith('IMAGE:')) {
+      if (decStr.startsWith('IMAGE:') || decStr.startsWith('IMAGE_TEXT:')) {
+        const isImageText = decStr.startsWith('IMAGE_TEXT:');
+        const startIdx = isImageText ? 11 : 6;
         const nullIdx = decStr.indexOf('\x00');
-        const mimeType = decStr.slice(6, nullIdx);
-        const imgBytes = decrypted.slice(nullIdx + 1);
-        const blob = new Blob([imgBytes], { type: mimeType });
-        setImageUrl(URL.createObjectURL(blob));
-        setStatus('success-image');
+        const mimeType = decStr.slice(startIdx, nullIdx);
+
+        if (isImageText) {
+          const secondNullIdx = decStr.indexOf('\x00', nullIdx + 1);
+          const imgBytes = decrypted.slice(nullIdx + 1, secondNullIdx);
+          const caption = decStr.slice(secondNullIdx + 1);
+          const blob = new Blob([imgBytes], { type: mimeType });
+          setImageUrl(URL.createObjectURL(blob));
+          setContent(caption);
+          setStatus('success-image');
+        } else {
+          const imgBytes = decrypted.slice(nullIdx + 1);
+          const blob = new Blob([imgBytes], { type: mimeType });
+          setImageUrl(URL.createObjectURL(blob));
+          setStatus('success-image');
+        }
       } else {
         setContent(decStr);
         setStatus('success-text');

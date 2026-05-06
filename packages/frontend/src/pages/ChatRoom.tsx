@@ -171,7 +171,7 @@ export default function ChatRoom() {
   const inviteUrl = roomId ? `${window.location.origin}/chat?join=${roomId}` : '';
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-dvh">
       {/* Header */}
       <div className="flex items-center justify-between py-2 px-1 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center gap-2 min-w-0">
@@ -250,7 +250,7 @@ export default function ChatRoom() {
       )}
 
       {/* Input area */}
-      <div className="border-t border-gray-200 pt-3 pb-6 px-1 safe-bottom bg-white">
+      <div className="border-t border-gray-200 pt-3 pb-8 px-3 safe-bottom bg-white">
         <div className="flex items-end gap-2">
           <button
             className="w-11 h-11 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0"

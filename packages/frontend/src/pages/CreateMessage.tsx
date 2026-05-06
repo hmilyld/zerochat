@@ -32,12 +32,25 @@ export default function CreateMessage() {
       let plaintext: Uint8Array;
 
       if (imageBytes) {
-        const mimeBytes = new TextEncoder().encode(`IMAGE:${imageType}\x00`);
+        // Format: IMAGE:type\x00<image_bytes>  or  IMAGE_TEXT:type\x00<image_bytes>\x00<text>
+        const hasText = !!text.trim();
+        const prefix = hasText ? 'IMAGE_TEXT:' : 'IMAGE:';
+        const mimeBytes = new TextEncoder().encode(prefix + imageType + '\x00');
         const imgArr = new Uint8Array(imageBytes);
-        const combined = new Uint8Array(mimeBytes.length + imgArr.length);
-        combined.set(mimeBytes);
-        combined.set(imgArr, mimeBytes.length);
-        plaintext = combined;
+
+        if (hasText) {
+          const textBytes = new TextEncoder().encode('\x00' + text.trim());
+          const combined = new Uint8Array(mimeBytes.length + imgArr.length + textBytes.length);
+          combined.set(mimeBytes);
+          combined.set(imgArr, mimeBytes.length);
+          combined.set(textBytes, mimeBytes.length + imgArr.length);
+          plaintext = combined;
+        } else {
+          const combined = new Uint8Array(mimeBytes.length + imgArr.length);
+          combined.set(mimeBytes);
+          combined.set(imgArr, mimeBytes.length);
+          plaintext = combined;
+        }
       } else {
         plaintext = new TextEncoder().encode(text.trim());
       }
@@ -62,7 +75,7 @@ export default function CreateMessage() {
         const salt = randomBytes(16);
         const wrapKey = derivePasswordKey(password, salt);
         const wrappedKey = encryptAES(wrapKey, key);
-        const fragment = bytesToBase64(salt) + ':' + bytesToBase64(wrappedKey);
+        const fragment = bytesToBase64(salt) + ':' + wrappedKey;
         url = `${window.location.origin}/read/${id}#${fragment}`;
       } else {
         url = `${window.location.origin}/read/${id}#${bytesToBase64(key)}`;
@@ -137,16 +150,14 @@ export default function CreateMessage() {
         placeholder="请输入消息内容..."
         value={text}
         onChange={(e) => setText(e.target.value)}
-        disabled={!!imageBytes}
       />
 
-      <div className="text-center text-sm text-gray-400">或</div>
+      <div className="text-center text-sm text-gray-400">或附带图片</div>
 
       <ImageUploader
         onImageReady={(bytes, mimeType) => {
           setImageBytes(bytes);
           setImageType(mimeType);
-          setText('');
         }}
         onClear={() => {
           setImageBytes(null);
@@ -154,7 +165,6 @@ export default function CreateMessage() {
         }}
       />
 
-      {/* Password field */}
       <div className="relative">
         <Input
           type={showPassword ? 'text' : 'password'}

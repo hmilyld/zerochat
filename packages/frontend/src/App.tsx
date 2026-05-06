@@ -7,7 +7,7 @@ import ChatRoom from './pages/ChatRoom.tsx';
 
 function PageWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50 safe-top safe-bottom">
+    <div className="min-h-dvh bg-gray-50 safe-top safe-bottom">
       <main className="mx-auto max-w-lg md:max-w-xl lg:max-w-2xl px-4 py-6">
         {children}
       </main>
@@ -23,8 +23,8 @@ export default function App() {
       <Route path="/read/:id" element={<PageWrapper><ReadMessage /></PageWrapper>} />
       <Route path="/chat" element={<PageWrapper><ChatEntry /></PageWrapper>} />
       <Route path="/chat/:roomId" element={
-        <div className="min-h-screen bg-gray-50 safe-top">
-          <div className="mx-auto max-w-lg md:max-w-xl lg:max-w-2xl h-screen flex flex-col">
+        <div className="min-h-dvh bg-gray-50 safe-top">
+          <div className="mx-auto max-w-lg md:max-w-xl lg:max-w-2xl h-dvh flex flex-col">
             <ChatRoom />
           </div>
         </div>
