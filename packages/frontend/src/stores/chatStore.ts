@@ -23,7 +23,7 @@ interface ChatState {
   userId: string | null;
   peerPublicKey: string | null;
   peerSalt: string | null;
-  aesKey: CryptoKey | null;
+  aesKey: Uint8Array | null;
   encryptedMessages: ChatMessage[];
   decryptedMessages: DecryptedMessage[];
   peerTyping: boolean;
@@ -34,7 +34,7 @@ interface ChatState {
   setConnected: (v: boolean) => void;
   setRoomInfo: (roomId: string, userId: string) => void;
   setPeerKey: (publicKey: string, salt: string) => void;
-  setAesKey: (key: CryptoKey) => void;
+  setAesKey: (key: Uint8Array | null) => void;
   addEncryptedMessage: (msg: ChatMessage) => void;
   addDecryptedMessage: (msg: DecryptedMessage) => void;
   setPeerTyping: (v: boolean) => void;

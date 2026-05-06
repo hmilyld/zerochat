@@ -63,7 +63,11 @@ export default function ReadMessage() {
             setStatus('need-password');
           } else {
             setStatus('decrypting');
-            tryDecrypt(data.ciphertext, fragment);
+            // Non-password: fragment IS the key
+            const key = base64ToBytes(fragment);
+            const decrypted = decryptAES(key, data.ciphertext);
+            if (!decrypted) { setStatus('error'); return; }
+            showDecrypted(decrypted);
           }
         }
       } catch {
@@ -75,43 +79,31 @@ export default function ReadMessage() {
     return () => { cancelled = true; };
   }, [id]);
 
-  function tryDecrypt(ct: string, keyB64: string) {
-    try {
-      const key = base64ToBytes(keyB64);
-      const decrypted = decryptAES(key, ct);
+  function showDecrypted(decrypted: Uint8Array) {
+    const header = new TextDecoder().decode(decrypted.slice(0, Math.min(30, decrypted.length)));
 
-      if (!decrypted) {
-        setStatus('error');
-        return;
-      }
-
-      const decStr = new TextDecoder().decode(decrypted);
-      if (decStr.startsWith('IMAGE:') || decStr.startsWith('IMAGE_TEXT:')) {
-        const isImageText = decStr.startsWith('IMAGE_TEXT:');
-        const startIdx = isImageText ? 11 : 6;
-        const nullIdx = decStr.indexOf('\x00');
-        const mimeType = decStr.slice(startIdx, nullIdx);
-
-        if (isImageText) {
-          const secondNullIdx = decStr.indexOf('\x00', nullIdx + 1);
-          const imgBytes = decrypted.slice(nullIdx + 1, secondNullIdx);
-          const caption = decStr.slice(secondNullIdx + 1);
-          const blob = new Blob([imgBytes], { type: mimeType });
-          setImageUrl(URL.createObjectURL(blob));
-          setContent(caption);
-          setStatus('success-image');
-        } else {
-          const imgBytes = decrypted.slice(nullIdx + 1);
-          const blob = new Blob([imgBytes], { type: mimeType });
-          setImageUrl(URL.createObjectURL(blob));
-          setStatus('success-image');
-        }
-      } else {
-        setContent(decStr);
-        setStatus('success-text');
-      }
-    } catch {
-      setStatus('error');
+    if (header.startsWith('IMAGE_TEXT:')) {
+      const mimeEnd = findNull(decrypted, 11);
+      const mimeType = new TextDecoder().decode(decrypted.slice(11, mimeEnd));
+      const imgLen = new DataView(decrypted.buffer, decrypted.byteOffset + mimeEnd + 1, 4).getUint32(0);
+      const imgStart = mimeEnd + 5;
+      const imgEnd = imgStart + imgLen;
+      const imgBytes = decrypted.slice(imgStart, imgEnd);
+      const caption = new TextDecoder().decode(decrypted.slice(imgEnd));
+      const blob = new Blob([imgBytes], { type: mimeType });
+      setImageUrl(URL.createObjectURL(blob));
+      setContent(caption);
+      setStatus('success-image');
+    } else if (header.startsWith('IMAGE:')) {
+      const mimeEnd = findNull(decrypted, 6);
+      const mimeType = new TextDecoder().decode(decrypted.slice(6, mimeEnd));
+      const imgBytes = decrypted.slice(mimeEnd + 1);
+      const blob = new Blob([imgBytes], { type: mimeType });
+      setImageUrl(URL.createObjectURL(blob));
+      setStatus('success-image');
+    } else {
+      setContent(new TextDecoder().decode(decrypted));
+      setStatus('success-text');
     }
   }
 
@@ -141,31 +133,7 @@ export default function ReadMessage() {
         return;
       }
 
-      const decStr = new TextDecoder().decode(decrypted);
-      if (decStr.startsWith('IMAGE:') || decStr.startsWith('IMAGE_TEXT:')) {
-        const isImageText = decStr.startsWith('IMAGE_TEXT:');
-        const startIdx = isImageText ? 11 : 6;
-        const nullIdx = decStr.indexOf('\x00');
-        const mimeType = decStr.slice(startIdx, nullIdx);
-
-        if (isImageText) {
-          const secondNullIdx = decStr.indexOf('\x00', nullIdx + 1);
-          const imgBytes = decrypted.slice(nullIdx + 1, secondNullIdx);
-          const caption = decStr.slice(secondNullIdx + 1);
-          const blob = new Blob([imgBytes], { type: mimeType });
-          setImageUrl(URL.createObjectURL(blob));
-          setContent(caption);
-          setStatus('success-image');
-        } else {
-          const imgBytes = decrypted.slice(nullIdx + 1);
-          const blob = new Blob([imgBytes], { type: mimeType });
-          setImageUrl(URL.createObjectURL(blob));
-          setStatus('success-image');
-        }
-      } else {
-        setContent(decStr);
-        setStatus('success-text');
-      }
+      showDecrypted(decrypted);
     } catch {
       setPasswordError('密码错误');
       setStatus('need-password');
@@ -281,4 +249,11 @@ export default function ReadMessage() {
       </Button>
     </div>
   );
+}
+
+function findNull(bytes: Uint8Array, start: number): number {
+  for (let i = start; i < bytes.length; i++) {
+    if (bytes[i] === 0) return i;
+  }
+  return bytes.length;
 }

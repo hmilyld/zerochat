@@ -34,21 +34,27 @@ export default function CreateMessage() {
       if (imageBytes) {
         // Format: IMAGE:type\x00<image_bytes>  or  IMAGE_TEXT:type\x00<image_bytes>\x00<text>
         const hasText = !!text.trim();
-        const prefix = hasText ? 'IMAGE_TEXT:' : 'IMAGE:';
-        const mimeBytes = new TextEncoder().encode(prefix + imageType + '\x00');
+        const prefix = new TextEncoder().encode(
+          (hasText ? 'IMAGE_TEXT:' : 'IMAGE:') + imageType + '\x00'
+        );
         const imgArr = new Uint8Array(imageBytes);
 
         if (hasText) {
-          const textBytes = new TextEncoder().encode('\x00' + text.trim());
-          const combined = new Uint8Array(mimeBytes.length + imgArr.length + textBytes.length);
-          combined.set(mimeBytes);
-          combined.set(imgArr, mimeBytes.length);
-          combined.set(textBytes, mimeBytes.length + imgArr.length);
+          const lenBuf = new Uint8Array(4);
+          new DataView(lenBuf.buffer).setUint32(0, imgArr.length);
+          const textBytes = new TextEncoder().encode(text.trim());
+          const total = prefix.length + 4 + imgArr.length + textBytes.length;
+          const combined = new Uint8Array(total);
+          let off = 0;
+          combined.set(prefix, off); off += prefix.length;
+          combined.set(lenBuf, off); off += 4;
+          combined.set(imgArr, off); off += imgArr.length;
+          combined.set(textBytes, off);
           plaintext = combined;
         } else {
-          const combined = new Uint8Array(mimeBytes.length + imgArr.length);
-          combined.set(mimeBytes);
-          combined.set(imgArr, mimeBytes.length);
+          const combined = new Uint8Array(prefix.length + imgArr.length);
+          combined.set(prefix);
+          combined.set(imgArr, prefix.length);
           plaintext = combined;
         }
       } else {

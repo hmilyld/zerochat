@@ -141,25 +141,27 @@ export default function ChatRoom() {
     if (!isReady || encrypting) return;
     setEncrypting(true);
     try {
-      const encrypted = await encryptImage(bytes, mimeType);
+      const caption = input.trim();
+      const encrypted = await encryptImage(bytes, mimeType, caption);
       send({ type: 'send-message', roomId, encryptedData: encrypted });
       const blob = new Blob([bytes], { type: mimeType });
       const imageUrl = URL.createObjectURL(blob);
       addDecryptedMessage({
         id: crypto.randomUUID(),
-        content: '',
+        content: caption,
         isImage: true,
         imageUrl,
         fromMe: true,
         timestamp: Date.now(),
       });
+      if (caption) setInput('');
       setShowImageUpload(false);
     } catch (err) {
       console.error('Image encrypt failed:', err);
     } finally {
       setEncrypting(false);
     }
-  }, [isReady, encrypting, encryptImage, roomId, send, addDecryptedMessage]);
+  }, [input, isReady, encrypting, encryptImage, roomId, send, addDecryptedMessage]);
 
   const handleDestroy = () => {
     send({ type: 'destroy-room', roomId });
