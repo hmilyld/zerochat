@@ -16,7 +16,7 @@ export default function MessageBubble({ message }: Props) {
         className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm ${
           message.fromMe
             ? 'bg-blue-600 text-white rounded-br-md'
-            : 'bg-white border text-gray-900 rounded-bl-md shadow-sm'
+            : 'bg-white dark:bg-gray-800 border dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-md shadow-sm'
         }`}
       >
         {message.isImage ? (

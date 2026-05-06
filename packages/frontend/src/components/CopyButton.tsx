@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Check, Copy } from 'lucide-react';
+import { useT } from '@/i18n/useT';
 
 interface Props {
   text: string;
   label?: string;
 }
 
-export default function CopyButton({ text, label = '复制链接' }: Props) {
+export default function CopyButton({ text, label }: Props) {
+  const { t } = useT();
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -32,7 +34,7 @@ export default function CopyButton({ text, label = '复制链接' }: Props) {
   return (
     <Button onClick={handleCopy} variant={copied ? 'secondary' : 'default'} className="gap-2">
       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-      {copied ? '已复制' : label}
+      {copied ? t('create.copied') : (label || t('create.copyLink'))}
     </Button>
   );
 }

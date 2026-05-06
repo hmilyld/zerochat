@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Plus, LogIn, Loader2 } from 'lucide-react';
+import { useT } from '@/i18n/useT';
 
 export default function ChatEntry() {
+  const { t } = useT();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [roomInput, setRoomInput] = useState('');
@@ -59,30 +61,30 @@ export default function ChatEntry() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h2 className="text-lg font-semibold">加密聊天室</h2>
-          <p className="text-xs text-gray-500">端到端加密，阅后即焚</p>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('chat.entryTitle')}</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('chat.entrySubtitle')}</p>
         </div>
       </div>
 
       <Card>
         <CardContent className="p-4 space-y-4">
-          <h3 className="font-medium">创建新房间</h3>
-          <p className="text-sm text-gray-500">创建一个加密聊天室，分享房间 ID 给对方</p>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          <h3 className="font-medium text-gray-900 dark:text-gray-100">{t('chat.createRoom')}</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('chat.createDesc')}</p>
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
           <Button className="w-full gap-2" onClick={handleCreate} disabled={creating}>
             {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-            {creating ? '创建中...' : '创建房间'}
+            {creating ? t('chat.creating') : t('chat.createRoom')}
           </Button>
         </CardContent>
       </Card>
 
-      <div className="text-center text-sm text-gray-400">或</div>
+      <div className="text-center text-sm text-gray-400 dark:text-gray-500">{t('chat.or')}</div>
 
       <Card>
         <CardContent className="p-4 space-y-4">
-          <h3 className="font-medium">加入已有房间</h3>
+          <h3 className="font-medium text-gray-900 dark:text-gray-100">{t('chat.joinRoom')}</h3>
           <Input
-            placeholder="输入房间 ID"
+            placeholder={t('chat.joinPlaceholder')}
             value={roomInput}
             onChange={(e) => setRoomInput(e.target.value)}
           />
@@ -93,7 +95,7 @@ export default function ChatEntry() {
             disabled={joining || !roomInput.trim()}
           >
             {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
-            {joining ? '加入中...' : '加入房间'}
+            {joining ? t('chat.joining') : t('chat.joinBtn')}
           </Button>
         </CardContent>
       </Card>

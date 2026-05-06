@@ -24,15 +24,13 @@ export function useChatCrypto(roomId?: string) {
 
   // Derive AES key when peer's public key arrives — uses @noble/ciphers (no crypto.subtle needed)
   useEffect(() => {
-    if (!peerPublicKey) { console.warn('[CRYPTO] no peerPublicKey yet'); return; }
-    console.warn('[CRYPTO] deriving AES key from peerPublicKey, roomId:', roomId);
+    if (!peerPublicKey) return;
 
     const peerPubBytes = base64ToPublicKey(peerPublicKey);
     const sharedSecret = computeSharedSecret(keyPairRef.current.privateKey, peerPubBytes);
     const saltBytes = new TextEncoder().encode(roomId || 'zerochat');
     const aesKeyRaw = deriveAESKey(sharedSecret, saltBytes, 'zerochat-room-key');
 
-    console.warn('[CRYPTO] AES key derived, length:', aesKeyRaw.length);
     setAesKey(aesKeyRaw);
   }, [peerPublicKey, roomId, setAesKey]);
 

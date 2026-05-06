@@ -9,8 +9,10 @@ import QRCode from '@/components/QRCode';
 import CopyButton from '@/components/CopyButton';
 import { ArrowLeft, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useT } from '@/i18n/useT';
 
 export default function CreateMessage() {
+  const { t } = useT();
   const navigate = useNavigate();
   const [text, setText] = useState('');
   const [imageBytes, setImageBytes] = useState<ArrayBuffer | null>(null);
@@ -32,7 +34,6 @@ export default function CreateMessage() {
       let plaintext: Uint8Array;
 
       if (imageBytes) {
-        // Format: IMAGE:type\x00<image_bytes>  or  IMAGE_TEXT:type\x00<image_bytes>\x00<text>
         const hasText = !!text.trim();
         const prefix = new TextEncoder().encode(
           (hasText ? 'IMAGE_TEXT:' : 'IMAGE:') + imageType + '\x00'
@@ -107,25 +108,25 @@ export default function CreateMessage() {
     return (
       <div className="space-y-5">
         <div className="text-center">
-          <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
-            <Lock className="w-6 h-6 text-green-600" />
+          <div className="mx-auto w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-3">
+            <Lock className="w-6 h-6 text-green-600 dark:text-green-200" />
           </div>
-          <h2 className="text-lg font-semibold text-gray-900">加密链接已生成</h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('create.resultTitle')}</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {result.hasPassword
-              ? '分享下方链接，对方需输入密码才能查看消息'
-              : '分享下方链接，对方打开后消息自动销毁'}
+              ? t('create.resultDescPwd')
+              : t('create.resultDesc')}
           </p>
         </div>
 
         <Card>
           <CardContent className="p-4 space-y-4">
-            <div className="bg-gray-50 rounded-lg p-3 break-all text-sm text-gray-800 font-mono">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 break-all text-sm text-gray-800 dark:text-gray-100 font-mono">
               {result.url}
             </div>
             <div className="flex gap-2">
               <CopyButton text={result.url} />
-              <Button variant="outline" onClick={handleReset}>再创建一个</Button>
+              <Button variant="outline" onClick={handleReset}>{t('create.another')}</Button>
             </div>
           </CardContent>
         </Card>
@@ -134,7 +135,7 @@ export default function CreateMessage() {
 
         <Button variant="ghost" className="w-full gap-2" onClick={() => navigate('/')}>
           <ArrowLeft className="w-4 h-4" />
-          返回首页
+          {t('create.back')}
         </Button>
       </div>
     );
@@ -147,18 +148,18 @@ export default function CreateMessage() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h2 className="text-lg font-semibold">创建一次性消息</h2>
-          <p className="text-xs text-gray-500">消息在对方查看后自动销毁</p>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('create.title')}</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('create.subtitle')}</p>
         </div>
       </div>
 
       <Textarea
-        placeholder="请输入消息内容..."
+        placeholder={t('create.placeholder')}
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
 
-      <div className="text-center text-sm text-gray-400">或附带图片</div>
+      <div className="text-center text-sm text-gray-400 dark:text-gray-500">{t('create.orImage')}</div>
 
       <ImageUploader
         onImageReady={(bytes, mimeType) => {
@@ -174,13 +175,13 @@ export default function CreateMessage() {
       <div className="relative">
         <Input
           type={showPassword ? 'text' : 'password'}
-          placeholder="设置访问密码（可选，留空则无密码）"
+          placeholder={t('create.password')}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
         <button
           type="button"
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
           onClick={() => setShowPassword(!showPassword)}
         >
           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -188,7 +189,7 @@ export default function CreateMessage() {
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 text-sm rounded-xl p-3">{error}</div>
+        <div className="bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 text-sm rounded-xl p-3">{error}</div>
       )}
 
       <Button
@@ -197,7 +198,7 @@ export default function CreateMessage() {
         disabled={!hasContent || loading}
         onClick={handleSubmit}
       >
-        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : '加密并生成链接'}
+        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t('create.submit')}
       </Button>
     </div>
   );

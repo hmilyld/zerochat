@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import imageCompression from 'browser-image-compression';
 import { Button } from '@/components/ui/button';
 import { Camera, Upload, X } from 'lucide-react';
+import { useT } from '@/i18n/useT';
 
 interface Props {
   onImageReady: (bytes: ArrayBuffer, mimeType: string) => void;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function ImageUploader({ onImageReady, onClear }: Props) {
+  const { t } = useT();
   const [preview, setPreview] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -47,7 +49,7 @@ export default function ImageUploader({ onImageReady, onClear }: Props) {
     <div className="space-y-3">
       {preview ? (
         <div className="relative rounded-xl overflow-hidden">
-          <img src={preview} alt="Preview" className="w-full max-h-64 object-contain bg-gray-100" />
+          <img src={preview} alt="Preview" className="w-full max-h-64 object-contain bg-gray-100 dark:bg-gray-800" />
           <button
             onClick={handleClear}
             className="absolute top-2 right-2 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center text-white"
@@ -65,7 +67,7 @@ export default function ImageUploader({ onImageReady, onClear }: Props) {
             disabled={compressing}
           >
             <Upload className="w-5 h-5" />
-            {compressing ? '压缩中...' : '选择图片'}
+            {compressing ? t('create.compressing') : t('create.selectImage')}
           </Button>
           <Button
             variant="outline"
@@ -78,7 +80,7 @@ export default function ImageUploader({ onImageReady, onClear }: Props) {
             disabled={compressing}
           >
             <Camera className="w-5 h-5" />
-            拍照
+            {t('create.takePhoto')}
           </Button>
         </div>
       )}

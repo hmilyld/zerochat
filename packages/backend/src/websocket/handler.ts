@@ -56,7 +56,6 @@ export async function handleMessage(ws: RoomSocket, raw: string): Promise<void> 
       ws.roomId = roomId;
       clients.set(userId, ws);
       send(ws, { type: 'room-joined', roomId, userId });
-      console.log(`[SRV] ${data.type}: room=${roomId.slice(0,8)} userId=${userId.slice(0,8)}, ${[...clients.values()].filter(c => c.roomId === roomId).length} in room`);
       broadcastToRoom(roomId, { type: 'peer-joined', userId }, userId);
       break;
     }

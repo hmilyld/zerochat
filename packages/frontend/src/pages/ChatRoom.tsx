@@ -11,8 +11,10 @@ import ImageUploader from '@/components/ImageUploader';
 import QRCode from '@/components/QRCode';
 import CopyButton from '@/components/CopyButton';
 import { ArrowLeft, Send, AlertTriangle, Shield, ImageIcon, X, Loader2, Share2 } from 'lucide-react';
+import { useT } from '@/i18n/useT';
 
 export default function ChatRoom() {
+  const { t } = useT();
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const { connect, send, disconnect } = useWebSocket();
@@ -41,14 +43,12 @@ export default function ChatRoom() {
 
   // Diagnostic: log key state transitions
   useEffect(() => {
-    console.warn('[CHAT] state changed:', { connected, peerConnected, roomId: !!roomId, peerPublicKey: !!peerPublicKey, isReady });
   }, [connected, peerConnected, roomId, peerPublicKey, isReady]);
 
   // Connect WebSocket on mount (reconnect on Strict Mode remount)
   useEffect(() => {
     const wsRef = { current: null as WebSocket | null };
 
-    // Don't reuse — always create fresh. connect() checks for existing OPEN socket.
     const setup = () => {
       const existing = useChatStore.getState().ws;
       if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) return;
@@ -66,7 +66,6 @@ export default function ChatRoom() {
   useEffect(() => {
     if (connected && roomId && !joinedRef.current) {
       joinedRef.current = true;
-      console.warn('[CHAT] sending join-room:', roomId);
       send({ type: 'join-room', roomId });
     }
   }, [connected, roomId]);
@@ -84,7 +83,6 @@ export default function ChatRoom() {
   // Key exchange: send our key when we know someone is in the room and encryption not ready
   useEffect(() => {
     if (peerConnected && !isReady) {
-      console.warn('[CHAT] sending exchange-key');
       const exchangeData = getExchangeData();
       send({
         type: 'exchange-key',
@@ -189,34 +187,34 @@ export default function ChatRoom() {
   return (
     <div className="flex flex-col h-dvh">
       {/* Header */}
-      <div className="flex items-center justify-between py-2 px-1 border-b border-gray-200 bg-gray-50">
+      <div className="flex items-center justify-between py-2 px-1 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
         <div className="flex items-center gap-2 min-w-0">
           <Button variant="ghost" size="icon" className="flex-shrink-0" onClick={() => { disconnect(); reset(); navigate('/'); }}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-medium truncate">加密聊天</p>
+              <p className="text-sm font-medium truncate text-gray-900 dark:text-gray-100">{t('chat.entryTitle')}</p>
               {roomId && (
-                <span className="text-xs text-gray-400 font-mono bg-gray-100 px-1.5 py-0.5 rounded truncate" title={roomId}>
+                <span className="text-xs text-gray-400 dark:text-gray-500 font-mono bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded truncate" title={roomId}>
                   {roomId.slice(0, 8)}...
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-500">
-              {peerConnected ? (isReady ? '已加密' : '协商密钥中...') : '等待对方加入...'}
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {peerConnected ? (isReady ? t('chat.encrypted') : t('chat.negotiating')) : t('chat.waiting')}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
-          <div className="flex items-center gap-1 text-xs text-gray-400">
+          <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
             <Shield className="w-3 h-3" />
             {fingerprint}
           </div>
           <Button
             variant="ghost"
             size="icon"
-            title="邀请对方"
+            title={t('chat.invite')}
             onClick={() => setShowInvite(true)}
           >
             <Share2 className="w-4 h-4" />
@@ -226,7 +224,7 @@ export default function ChatRoom() {
             size="sm"
             onClick={() => setDestroyConfirm(true)}
           >
-            销毁
+            {t('chat.destroy')}
           </Button>
         </div>
       </div>
@@ -238,11 +236,11 @@ export default function ChatRoom() {
         ))}
         {peerTyping && (
           <div className="flex justify-start mb-3">
-            <div className="bg-white border rounded-2xl rounded-bl-md px-4 py-2.5 shadow-sm">
+            <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl rounded-bl-md px-4 py-2.5 shadow-sm">
               <div className="flex gap-1">
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
@@ -251,11 +249,11 @@ export default function ChatRoom() {
 
       {/* Image upload area */}
       {showImageUpload && (
-        <div className="border-t p-3 bg-white">
+        <div className="border-t dark:border-gray-700 p-3 bg-white dark:bg-gray-900">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">发送图片</span>
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{t('chat.sendImage')}</span>
             <button onClick={() => setShowImageUpload(false)}>
-              <X className="w-4 h-4 text-gray-400" />
+              <X className="w-4 h-4 text-gray-400 dark:text-gray-500" />
             </button>
           </div>
           <ImageUploader
@@ -266,10 +264,10 @@ export default function ChatRoom() {
       )}
 
       {/* Input area */}
-      <div className="border-t border-gray-200 pt-3 pb-8 px-3 safe-bottom bg-white">
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-3 pb-8 px-3 safe-bottom bg-white dark:bg-gray-900">
         <div className="flex items-end gap-2">
           <button
-            className="w-11 h-11 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0"
+            className="w-11 h-11 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
             onClick={() => setShowImageUpload(!showImageUpload)}
           >
             <ImageIcon className="w-5 h-5" />
@@ -283,7 +281,7 @@ export default function ChatRoom() {
                 handleSendText();
               }
             }}
-            placeholder="输入消息..."
+            placeholder={t('chat.inputPlaceholder')}
             className="flex-1"
             disabled={!isReady || encrypting}
           />
@@ -300,23 +298,23 @@ export default function ChatRoom() {
       {/* Invite dialog */}
       {showInvite && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900">邀请对方加入</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">{t('chat.invite')}</h3>
               <button onClick={() => setShowInvite(false)}>
-                <X className="w-5 h-5 text-gray-400" />
+                <X className="w-5 h-5 text-gray-400 dark:text-gray-500" />
               </button>
             </div>
-            <div className="bg-gray-50 rounded-lg p-3 break-all text-sm text-gray-800 font-mono">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 break-all text-sm text-gray-800 dark:text-gray-100 font-mono">
               {roomId}
             </div>
-            <p className="text-xs text-gray-500">将房间 ID 或下方链接发送给对方，对方在首页点击"加入已有房间"输入即可</p>
-            <div className="bg-gray-50 rounded-lg p-3 break-all text-xs text-gray-600 font-mono">
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t('chat.inviteDesc')}</p>
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 break-all text-xs text-gray-600 dark:text-gray-400 font-mono">
               {inviteUrl}
             </div>
             <div className="flex gap-2">
-              <CopyButton text={roomId!} label="复制房间号" />
-              <CopyButton text={inviteUrl} label="复制链接" />
+              <CopyButton text={roomId!} label={t('chat.copyRoomId')} />
+              <CopyButton text={inviteUrl} label={t('chat.copyLink')} />
             </div>
             <QRCode url={inviteUrl} />
           </div>
@@ -326,16 +324,16 @@ export default function ChatRoom() {
       {/* Remote destroyed dialog */}
       {remoteDestroyed && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full space-y-4">
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-8 h-8 text-orange-500" />
               <div>
-                <h3 className="font-semibold text-gray-900">房间已销毁</h3>
-                <p className="text-sm text-gray-500">对方已销毁该房间，所有聊天记录已清除</p>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">{t('chat.roomDestroyed')}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('chat.roomDestroyedDesc')}</p>
               </div>
             </div>
             <Button className="w-full" onClick={() => navigate('/', { replace: true })}>
-              返回首页
+              {t('chat.goHome')}
             </Button>
           </div>
         </div>
@@ -344,20 +342,20 @@ export default function ChatRoom() {
       {/* Destroy confirmation dialog */}
       {destroyConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full space-y-4">
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-8 h-8 text-red-500" />
               <div>
-                <h3 className="font-semibold text-gray-900">确认销毁房间？</h3>
-                <p className="text-sm text-gray-500">双方的所有聊天记录将立即清除，不可恢复</p>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">{t('chat.confirmDestroy')}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('chat.destroyWarning')}</p>
               </div>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" onClick={() => setDestroyConfirm(false)}>
-                取消
+                {t('chat.cancel')}
               </Button>
               <Button variant="destructive" className="flex-1" onClick={handleDestroy}>
-                确认销毁
+                {t('chat.confirm')}
               </Button>
             </div>
           </div>
