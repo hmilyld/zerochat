@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { decryptAES, base64ToBytes, derivePasswordKey } from '@zerochat/shared';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,8 @@ export default function ReadMessage() {
   const [passwordError, setPasswordError] = useState('');
   const [ciphertext, setCiphertext] = useState<string | null>(null);
   const [fragmentData, setFragmentData] = useState<{ salt?: string; wrappedKey?: string; keyB64?: string }>({});
-  const fetchedRef = useRef(false);
+
+  // Fetch and decrypt — uses setTimeout deferral to survive Strict Mode double-mount
 
   // Parse fragment on mount
   useEffect(() => {
@@ -44,42 +45,33 @@ export default function ReadMessage() {
 
     let cancelled = false;
 
-    async function fetchCiphertext() {
-      if (fetchedRef.current) return; // prevent double-fetch in Strict Mode
-      fetchedRef.current = true;
+    async function doFetch() {
       try {
         const res = await fetch(`/api/message/${id}/read`, { method: 'POST' });
-        if (!res.ok) {
-          if (!cancelled) setStatus('destroyed');
-          return;
-        }
+        if (cancelled) return;
+        if (!res.ok) { setStatus('destroyed'); return; }
         const data = await res.json();
-        if (!data.ciphertext) {
-          if (!cancelled) setStatus('destroyed');
-          return;
-        }
+        if (!data.ciphertext) { setStatus('destroyed'); return; }
+        if (cancelled) return;
 
-        if (!cancelled) {
-          setCiphertext(data.ciphertext);
+        setCiphertext(data.ciphertext);
 
-          if (fragment.includes(':')) {
-            setStatus('need-password');
-          } else {
-            setStatus('decrypting');
-            // Non-password: fragment IS the key
-            const key = base64ToBytes(fragment);
-            const decrypted = decryptAES(key, data.ciphertext);
-            if (!decrypted) { setStatus('error'); return; }
-            showDecrypted(decrypted);
-          }
+        if (fragment.includes(':')) {
+          setStatus('need-password');
+        } else {
+          const key = base64ToBytes(fragment);
+          const decrypted = decryptAES(key, data.ciphertext);
+          if (!decrypted) { setStatus('error'); return; }
+          showDecrypted(decrypted);
         }
       } catch {
         if (!cancelled) setStatus('error');
       }
     }
 
-    fetchCiphertext();
-    return () => { cancelled = true; };
+    // Defer so Strict Mode unmount clears timer before fetch fires
+    const timer = setTimeout(doFetch, 0);
+    return () => { cancelled = true; clearTimeout(timer); };
   }, [id]);
 
   function showDecrypted(decrypted: Uint8Array) {
