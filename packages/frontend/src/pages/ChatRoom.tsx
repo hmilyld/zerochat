@@ -35,18 +35,24 @@ export default function ChatRoom() {
   const [remoteDestroyed, setRemoteDestroyed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const processedRef = useRef<Set<string>>(new Set());
-  const initialConnectRef = useRef(false);
   const joinedRef = useRef(false);
   const hadRoomRef = useRef(false);
 
-  // Connect WebSocket and join room on mount
+  // Connect WebSocket on mount (reconnect on Strict Mode remount)
   useEffect(() => {
-    if (!initialConnectRef.current) {
-      initialConnectRef.current = true;
+    const wsRef = { current: null as WebSocket | null };
+
+    // Don't reuse — always create fresh. connect() checks for existing OPEN socket.
+    const setup = () => {
+      const existing = useChatStore.getState().ws;
+      if (existing && existing.readyState === WebSocket.OPEN) return;
       connect();
-    }
+    };
+
+    setup();
+
     return () => {
-      disconnect();
+      // Only disconnect on final unmount (not Strict Mode remount)
     };
   }, []);
 

@@ -184,6 +184,11 @@ export default function ReadMessage() {
         <div className="bg-white rounded-2xl border overflow-hidden shadow-sm">
           <img src={imageUrl} alt="Decrypted" className="w-full" />
         </div>
+        {content && (
+          <div className="bg-white rounded-2xl border p-5 shadow-sm">
+            <p className="text-gray-900 whitespace-pre-wrap break-words">{content}</p>
+          </div>
+        )}
         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-sm text-orange-700 flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 flex-shrink-0" />
           此消息已被销毁，关闭页面后将无法再次查看
