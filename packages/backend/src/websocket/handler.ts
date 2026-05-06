@@ -1,6 +1,6 @@
 import { WebSocket } from 'ws';
 import type { ClientMessage, ServerMessage } from '@zerochat/shared';
-import { createRoom, joinRoom, destroyRoom } from '../redis/client.ts';
+import { createRoom, getRoom, destroyRoom } from '../redis/client.ts';
 import { randomBase64Url } from '@zerochat/shared';
 
 interface RoomSocket extends WebSocket {
@@ -34,34 +34,29 @@ export async function handleMessage(ws: RoomSocket, raw: string): Promise<void> 
   }
 
   switch (data.type) {
-    case 'create-room': {
-      const roomId = randomBase64Url(16);
-      await createRoom(roomId);
+    case 'create-room':
+    case 'join-room': {
+      const roomId = data.type === 'create-room' ? randomBase64Url(16) : data.roomId;
+
+      if (data.type === 'join-room') {
+        const room = await getRoom(roomId);
+        if (!room) {
+          send(ws, { type: 'error', message: '房间不存在或已过期' });
+          return;
+        }
+      } else {
+        await createRoom(roomId);
+      }
+
+      // Remove old userId if reconnecting
+      if (ws.userId) clients.delete(ws.userId);
+
       const userId = randomBase64Url(12);
       ws.userId = userId;
       ws.roomId = roomId;
       clients.set(userId, ws);
-      send(ws, { type: 'room-created', roomId });
       send(ws, { type: 'room-joined', roomId, userId });
-      break;
-    }
-
-    case 'join-room': {
-      const result = await joinRoom(data.roomId, 'dummy');
-      if (result === -1) {
-        send(ws, { type: 'error', message: '房间不存在或已过期' });
-        return;
-      }
-      if (result === -2) {
-        send(ws, { type: 'error', message: '房间已满' });
-        return;
-      }
-      const userId = randomBase64Url(12);
-      ws.userId = userId;
-      ws.roomId = data.roomId;
-      clients.set(userId, ws);
-      send(ws, { type: 'room-joined', roomId: data.roomId, userId });
-      broadcastToRoom(data.roomId, { type: 'peer-joined', userId }, userId);
+      broadcastToRoom(roomId, { type: 'peer-joined', userId }, userId);
       break;
     }
 

@@ -34,9 +34,9 @@ export default function ChatRoom() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const processedRef = useRef<Set<string>>(new Set());
   const initialConnectRef = useRef(false);
-  const exchangeSentRef = useRef(false);
+  const joinedRef = useRef(false);
 
-  // Connect WebSocket on mount
+  // Connect WebSocket and join room on mount
   useEffect(() => {
     if (!initialConnectRef.current) {
       initialConnectRef.current = true;
@@ -47,13 +47,18 @@ export default function ChatRoom() {
     };
   }, []);
 
-  // Key exchange: both users initiate when connected. Also respond when receiving peer's key.
+  // Send join-room once connected
   useEffect(() => {
-    if (!connected || !roomId || isReady) return;
+    if (connected && roomId && !joinedRef.current) {
+      joinedRef.current = true;
+      send({ type: 'join-room', roomId });
+    }
+  }, [connected, roomId]);
 
-    if (!exchangeSentRef.current) {
-      // Send our key — the server will forward it to the other peer if they're in the room
-      exchangeSentRef.current = true;
+  // Key exchange: send our key when we know someone is in the room and encryption not ready
+  useEffect(() => {
+    if (peerConnected && !isReady) {
+      console.debug('[ChatRoom] sending exchange-key');
       const exchangeData = getExchangeData();
       send({
         type: 'exchange-key',
@@ -61,18 +66,7 @@ export default function ChatRoom() {
         ...exchangeData,
       });
     }
-
-    // If we received peer's key but haven't sent ours yet (edge case), send now
-    if (peerPublicKey && !exchangeSentRef.current) {
-      exchangeSentRef.current = true;
-      const exchangeData = getExchangeData();
-      send({
-        type: 'exchange-key',
-        roomId,
-        ...exchangeData,
-      });
-    }
-  }, [connected, roomId, isReady, peerPublicKey]);
+  }, [peerConnected, peerPublicKey, isReady, roomId]);
 
   // Decrypt new incoming messages
   useEffect(() => {

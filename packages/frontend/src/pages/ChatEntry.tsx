@@ -4,8 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Plus, LogIn, Loader2 } from 'lucide-react';
-import { useWebSocket } from '@/hooks/useWebSocket';
-import { useChatStore } from '@/stores/chatStore';
 
 export default function ChatEntry() {
   const navigate = useNavigate();
@@ -13,95 +11,44 @@ export default function ChatEntry() {
   const [roomInput, setRoomInput] = useState('');
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
-  const [joinError, setJoinError] = useState('');
-  const { connect } = useWebSocket();
+  const [error, setError] = useState('');
 
-  // Pre-fill room ID from invite link
   useEffect(() => {
     const joinId = searchParams.get('join');
-    if (joinId) {
-      setRoomInput(joinId);
-    }
+    if (joinId) setRoomInput(joinId);
   }, []);
 
   async function handleCreate() {
     setCreating(true);
-    setJoinError('');
-    connect();
-
-    const waitForState = () => new Promise<void>((resolve, reject) => {
-      const start = Date.now();
-      const check = setInterval(() => {
-        const s = useChatStore.getState();
-        if (s.connected) {
-          clearInterval(check);
-          s.ws!.send(JSON.stringify({ type: 'create-room' }));
-          const checkRoom = setInterval(() => {
-            const st = useChatStore.getState();
-            if (st.roomId && st.userId) {
-              clearInterval(checkRoom);
-              resolve();
-            }
-          }, 100);
-        }
-        if (Date.now() - start > 10000) {
-          clearInterval(check);
-          reject(new Error('创建房间超时'));
-        }
-      }, 100);
-    });
-
+    setError('');
     try {
-      await waitForState();
-      const roomId = useChatStore.getState().roomId;
-      setCreating(false);
+      const res = await fetch('/api/room', { method: 'POST' });
+      if (!res.ok) throw new Error('创建失败');
+      const { roomId } = await res.json();
       navigate(`/chat/${roomId}`);
     } catch (err: any) {
+      setError(err.message);
+    } finally {
       setCreating(false);
-      setJoinError(err.message);
     }
   }
 
   async function handleJoin() {
     if (!roomInput.trim()) return;
     setJoining(true);
-    setJoinError('');
-    connect();
-
+    setError('');
     const roomId = roomInput.trim();
-    const waitForState = () => new Promise<void>((resolve, reject) => {
-      const start = Date.now();
-      const check = setInterval(() => {
-        const s = useChatStore.getState();
-        if (s.connected) {
-          clearInterval(check);
-          s.ws!.send(JSON.stringify({ type: 'join-room', roomId }));
-          const checkJoin = setInterval(() => {
-            const st = useChatStore.getState();
-            if (st.roomId) {
-              clearInterval(checkJoin);
-              resolve();
-            }
-            if (st.error) {
-              clearInterval(checkJoin);
-              reject(new Error(st.error));
-            }
-          }, 100);
-        }
-        if (Date.now() - start > 10000) {
-          clearInterval(check);
-          reject(new Error('加入房间超时'));
-        }
-      }, 100);
-    });
-
     try {
-      await waitForState();
-      setJoining(false);
+      const res = await fetch(`/api/room/${roomId}/join`, { method: 'POST' });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || '加入失败');
+      }
       navigate(`/chat/${roomId}`);
     } catch (err: any) {
+      setError(err.message);
+    } finally {
       setJoining(false);
-      setJoinError(err.message);
     }
   }
 
@@ -121,6 +68,7 @@ export default function ChatEntry() {
         <CardContent className="p-4 space-y-4">
           <h3 className="font-medium">创建新房间</h3>
           <p className="text-sm text-gray-500">创建一个加密聊天室，分享房间 ID 给对方</p>
+          {error && <p className="text-sm text-red-600">{error}</p>}
           <Button className="w-full gap-2" onClick={handleCreate} disabled={creating}>
             {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             {creating ? '创建中...' : '创建房间'}
@@ -138,9 +86,6 @@ export default function ChatEntry() {
             value={roomInput}
             onChange={(e) => setRoomInput(e.target.value)}
           />
-          {joinError && (
-            <p className="text-sm text-red-600">{joinError}</p>
-          )}
           <Button
             className="w-full gap-2"
             variant="outline"

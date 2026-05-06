@@ -5,6 +5,7 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { connectRedis } from './redis/client.ts';
 import { messageRouter } from './api/message.ts';
+import { roomRouter } from './api/room.ts';
 import { setupWebSocket } from './websocket/server.ts';
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -36,6 +37,7 @@ const readLimiter = rateLimit({
 });
 app.use('/api/message/:id', readLimiter);
 
+app.use(roomRouter);
 app.use(messageRouter);
 
 app.get('/health', (_req, res) => {
