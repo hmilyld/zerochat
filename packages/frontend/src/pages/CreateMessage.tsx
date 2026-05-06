@@ -17,6 +17,7 @@ export default function CreateMessage() {
   const [imageType, setImageType] = useState<string>('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [ttl, setTtl] = useState(3600); // default 1 hour
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ url: string; hasPassword: boolean } | null>(null);
   const [error, setError] = useState('');
@@ -65,7 +66,7 @@ export default function CreateMessage() {
       const res = await fetch('/api/message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ciphertext: encrypted }),
+        body: JSON.stringify({ ciphertext: encrypted, ttl }),
       });
 
       if (!res.ok) {
@@ -159,6 +160,31 @@ export default function CreateMessage() {
           setImageType('');
         }}
       />
+
+      {/* TTL selector */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">{t('create.ttl')}</span>
+        <div className="flex gap-1">
+          {[
+            { label: t('create.ttl1h'), value: 3600 },
+            { label: t('create.ttl1d'), value: 86400 },
+            { label: t('create.ttl1w'), value: 604800 },
+          ].map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                ttl === opt.value
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+              onClick={() => setTtl(opt.value)}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="relative">
         <Input

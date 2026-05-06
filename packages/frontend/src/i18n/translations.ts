@@ -25,6 +25,10 @@ const zh: Translations = {
   'create.copied': '已复制',
   'create.another': '再创建一个',
   'create.back': '返回首页',
+  'create.ttl': '有效期',
+  'create.ttl1h': '1 小时',
+  'create.ttl1d': '1 天',
+  'create.ttl1w': '1 周',
 
   'read.loading': '正在获取消息...',
   'read.decrypting': '正在解密...',
@@ -68,6 +72,7 @@ const zh: Translations = {
   'chat.roomDestroyed': '房间已销毁',
   'chat.roomDestroyedDesc': '对方已销毁该房间，所有聊天记录已清除',
   'chat.goHome': '返回首页',
+  'chat.idle': '空闲倒计时',
 
   'about.title': '关于 ZeroChat',
   'about.intro': 'ZeroChat 是一个纯网页的私密通讯工具，提供阅后即焚的一次性消息和端到端加密聊天室。',
@@ -108,6 +113,10 @@ const en: Translations = {
   'create.copied': 'Copied',
   'create.another': 'Create Another',
   'create.back': 'Back to Home',
+  'create.ttl': 'Expires in',
+  'create.ttl1h': '1 Hour',
+  'create.ttl1d': '1 Day',
+  'create.ttl1w': '1 Week',
 
   'read.loading': 'Fetching message...',
   'read.decrypting': 'Decrypting...',
@@ -151,6 +160,7 @@ const en: Translations = {
   'chat.roomDestroyed': 'Room Destroyed',
   'chat.roomDestroyedDesc': 'The other party has destroyed this room. All chat history has been cleared.',
   'chat.goHome': 'Back to Home',
+  'chat.idle': 'Idle Timeout',
 
   'about.title': 'About ZeroChat',
   'about.intro': 'ZeroChat is a web-based private communication tool offering burn-after-reading messages and end-to-end encrypted chat rooms.',

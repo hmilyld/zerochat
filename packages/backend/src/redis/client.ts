@@ -21,10 +21,12 @@ export async function connectRedis(): Promise<void> {
   console.log('Redis connected');
 }
 
-const DEFAULT_TTL = parseInt(process.env.MESSAGE_TTL_SECONDS || '86400', 10); // 24h
+const DEFAULT_MSG_TTL = parseInt(process.env.MESSAGE_TTL_SECONDS || '3600', 10);
+const ROOM_TTL = parseInt(process.env.ROOM_TTL_SECONDS || '3600', 10);
+const ROOM_IDLE = parseInt(process.env.ROOM_IDLE_SECONDS || '3600', 10);
 
 export async function storeCiphertext(id: string, ciphertext: string, ttl?: number): Promise<void> {
-  await redis.setex(`msg:${id}`, ttl || DEFAULT_TTL, ciphertext);
+  await redis.setex(`msg:${id}`, ttl || DEFAULT_MSG_TTL, ciphertext);
 }
 
 export async function getAndDeleteCiphertext(id: string): Promise<string | null> {
@@ -42,7 +44,7 @@ export async function createRoom(roomId: string): Promise<void> {
     createdAt: Date.now().toString(),
     lastActive: Date.now().toString(),
   });
-  await redis.expire(`room:${roomId}`, 3600); // 1h auto-expire
+  await redis.expire(`room:${roomId}`, ROOM_TTL);
 }
 
 export async function joinRoom(roomId: string, userId: string): Promise<number> {
@@ -53,16 +55,23 @@ export async function joinRoom(roomId: string, userId: string): Promise<number> 
   const count = parseInt(members || '0', 10);
   if (count >= 2) return -2;
   await redis.hset(key, 'members', (count + 1).toString(), 'lastActive', Date.now().toString());
-  await redis.expire(key, 3600);
+  // Second person joined → full room, switch to idle-based TTL
+  await redis.expire(key, ROOM_IDLE);
   return count + 1;
+}
+
+export async function touchRoom(roomId: string): Promise<void> {
+  const key = `room:${roomId}`;
+  const exists = await redis.exists(key);
+  if (!exists) return;
+  await redis.hset(key, 'lastActive', Date.now().toString());
+  await redis.expire(key, ROOM_IDLE);
 }
 
 export async function getRoom(roomId: string): Promise<Record<string, string> | null> {
   const key = `room:${roomId}`;
   const exists = await redis.exists(key);
   if (!exists) return null;
-  await redis.hset(key, 'lastActive', Date.now().toString());
-  await redis.expire(key, 3600);
   return redis.hgetall(key);
 }
 

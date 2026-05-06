@@ -1,6 +1,6 @@
 import { WebSocket } from 'ws';
 import type { ClientMessage, ServerMessage } from '@zerochat/shared';
-import { createRoom, getRoom, destroyRoom } from '../redis/client.ts';
+import { createRoom, getRoom, destroyRoom, touchRoom } from '../redis/client.ts';
 import { randomBase64Url } from '@zerochat/shared';
 
 interface RoomSocket extends WebSocket {
@@ -72,6 +72,12 @@ export async function handleMessage(ws: RoomSocket, raw: string): Promise<void> 
 
     case 'send-message': {
       if (!ws.roomId) return;
+      const room = await getRoom(ws.roomId);
+      if (!room) {
+        send(ws, { type: 'room-destroyed' });
+        return;
+      }
+      await touchRoom(ws.roomId);
       broadcastToRoom(ws.roomId, {
         type: 'new-message',
         encryptedData: data.encryptedData,

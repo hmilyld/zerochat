@@ -36,10 +36,12 @@ export default function ChatRoom() {
   const [showInvite, setShowInvite] = useState(false);
   const [encrypting, setEncrypting] = useState(false);
   const [remoteDestroyed, setRemoteDestroyed] = useState(false);
+  const [idleSeconds, setIdleSeconds] = useState(3600);
   const scrollRef = useRef<HTMLDivElement>(null);
   const processedRef = useRef<Set<string>>(new Set());
   const joinedRef = useRef(false);
   const hadRoomRef = useRef(false);
+  const lastActivityRef = useRef(Date.now());
 
   // Connect WebSocket on mount (reconnect on Strict Mode remount)
   useEffect(() => {
@@ -124,12 +126,25 @@ export default function ChatRoom() {
     send({ type: 'typing', roomId });
   }, [input]);
 
+  // Idle countdown timer
+  useEffect(() => {
+    const IDLE_TIMEOUT = 3600; // matches ROOM_IDLE_SECONDS default
+    const tick = () => {
+      const remaining = IDLE_TIMEOUT - Math.floor((Date.now() - lastActivityRef.current) / 1000);
+      setIdleSeconds(Math.max(0, remaining));
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [decryptedMessages]); // reset on new messages
+
   const handleSendText = useCallback(async () => {
     if (!input.trim() || !isReady || encrypting) return;
     setEncrypting(true);
     try {
       const encrypted = await encryptText(input.trim());
       send({ type: 'send-message', roomId, encryptedData: encrypted });
+      lastActivityRef.current = Date.now();
       addDecryptedMessage({
         id: randomId(),
         content: input.trim(),
@@ -152,6 +167,7 @@ export default function ChatRoom() {
       const caption = input.trim();
       const encrypted = await encryptImage(bytes, mimeType, caption);
       send({ type: 'send-message', roomId, encryptedData: encrypted });
+      lastActivityRef.current = Date.now();
       const blob = new Blob([bytes], { type: mimeType });
       const imageUrl = URL.createObjectURL(blob);
       addDecryptedMessage({
@@ -199,6 +215,11 @@ export default function ChatRoom() {
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               {peerConnected ? (isReady ? t('chat.encrypted') : t('chat.negotiating')) : t('chat.waiting')}
+              {isReady && (
+                <span className="ml-2 text-gray-400 dark:text-gray-500">
+                  {t('chat.idle')}: {String(Math.floor(idleSeconds / 60)).padStart(2, '0')}:{String(idleSeconds % 60).padStart(2, '0')}
+                </span>
+              )}
             </p>
           </div>
         </div>
