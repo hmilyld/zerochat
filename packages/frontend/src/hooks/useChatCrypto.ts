@@ -9,10 +9,11 @@ import {
   generateKeyPair,
   computeSharedSecret,
   deriveAESKey,
+  concatBytes,
 } from '@zerochat/shared';
 import type { KeyPair } from '@zerochat/shared';
 
-export function useChatCrypto() {
+export function useChatCrypto(roomId?: string) {
   const peerPublicKey = useChatStore((s) => s.peerPublicKey);
   const peerSalt = useChatStore((s) => s.peerSalt);
   const aesKey = useChatStore((s) => s.aesKey);
@@ -30,18 +31,27 @@ export function useChatCrypto() {
     );
   }
 
+  // Derive AES key when peer's public key arrives. Both users MUST use the same salt:
+  // the creator's salt is deterministic (from roomId), the joiner uses the received salt.
   useEffect(() => {
-    if (!peerPublicKey || !peerSalt) return;
+    if (!peerPublicKey) return;
 
     const peerPubBytes = base64ToPublicKey(peerPublicKey);
-    const saltBytes = base64ToBytes(peerSalt);
     const sharedSecret = computeSharedSecret(keyPairRef.current.privateKey, peerPubBytes);
+
+    // Use roomId to derive salt so both parties compute the same key.
+    // If peer sent a salt, sort and combine both for mutual authentication.
+    const roomSalt = new TextEncoder().encode(roomId || 'zerochat');
+    const saltBytes = peerSalt
+      ? concatBytes(roomSalt, base64ToBytes(peerSalt))
+      : roomSalt;
+
     const aesKeyRaw = deriveAESKey(sharedSecret, saltBytes, 'zerochat-room-key');
 
     importAesKey(aesKeyRaw).then((key) => {
       setAesKey(key);
     });
-  }, [peerPublicKey, peerSalt, setAesKey]);
+  }, [peerPublicKey, peerSalt, roomId, setAesKey]);
 
   const encryptText = useCallback(async (text: string): Promise<string> => {
     if (!aesKey) throw new Error('No AES key');

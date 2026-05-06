@@ -23,8 +23,9 @@ export default function ChatRoom() {
   const addDecryptedMessage = useChatStore((s) => s.addDecryptedMessage);
   const peerTyping = useChatStore((s) => s.peerTyping);
   const reset = useChatStore((s) => s.reset);
+  const storeRoomId = useChatStore((s) => s.roomId);
 
-  const { getExchangeData, getFingerprint, encryptText, encryptImage, decryptMessage, isReady } = useChatCrypto();
+  const { getExchangeData, getFingerprint, encryptText, encryptImage, decryptMessage, isReady } = useChatCrypto(roomId);
 
   const [input, setInput] = useState('');
   const [showImageUpload, setShowImageUpload] = useState(false);
@@ -35,6 +36,7 @@ export default function ChatRoom() {
   const processedRef = useRef<Set<string>>(new Set());
   const initialConnectRef = useRef(false);
   const joinedRef = useRef(false);
+  const hadRoomRef = useRef(false);
 
   // Connect WebSocket and join room on mount
   useEffect(() => {
@@ -54,6 +56,16 @@ export default function ChatRoom() {
       send({ type: 'join-room', roomId });
     }
   }, [connected, roomId]);
+
+  // Watch for remote room destruction (reset via WebSocket handler)
+  useEffect(() => {
+    if (storeRoomId) {
+      hadRoomRef.current = true;
+    } else if (hadRoomRef.current) {
+      disconnect();
+      navigate('/', { replace: true });
+    }
+  }, [storeRoomId]);
 
   // Key exchange: send our key when we know someone is in the room and encryption not ready
   useEffect(() => {
