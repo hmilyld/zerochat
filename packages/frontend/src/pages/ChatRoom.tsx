@@ -65,6 +65,7 @@ export default function ChatRoom() {
   useEffect(() => {
     if (connected && roomId && !joinedRef.current) {
       joinedRef.current = true;
+      console.warn('[CHAT] sending join-room:', roomId);
       send({ type: 'join-room', roomId });
     }
   }, [connected, roomId]);
@@ -82,6 +83,7 @@ export default function ChatRoom() {
   // Key exchange: send our key when we know someone is in the room and encryption not ready
   useEffect(() => {
     if (peerConnected && !isReady) {
+      console.warn('[CHAT] sending exchange-key');
       const exchangeData = getExchangeData();
       send({
         type: 'exchange-key',

@@ -70,8 +70,8 @@ export function useWebSocket() {
 
     console.warn('[WS] creating new socket →', WS_BASE);
     const socket = new WebSocket(WS_BASE);
+    setWs(socket); // Store immediately so Strict Mode remounts can find it
     socket.onopen = () => {
-      setWs(socket);
       setConnected(true);
       setError(null);
     };
