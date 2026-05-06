@@ -24,9 +24,11 @@ export function useWebSocket() {
         setRoomInfo(msg.roomId, msg.userId);
         break;
       case 'peer-joined':
+        console.warn('[WS] peer-joined received');
         setPeerConnected(true);
         break;
       case 'peer-public-key':
+        console.warn('[WS] peer-public-key received, len:', msg.publicKey.length);
         setPeerKey(msg.publicKey, msg.salt);
         setPeerConnected(true);
         break;
@@ -60,11 +62,13 @@ export function useWebSocket() {
     // Reuse existing connection if still open
     const existing = useChatStore.getState().ws;
     if (existing && existing.readyState === WebSocket.OPEN) {
+      console.warn('[WS] reusing existing socket');
       setConnected(true);
       setError(null);
       return;
     }
 
+    console.warn('[WS] creating new socket →', WS_BASE);
     const socket = new WebSocket(WS_BASE);
     socket.onopen = () => {
       setWs(socket);

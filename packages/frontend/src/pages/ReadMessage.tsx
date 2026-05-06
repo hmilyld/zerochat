@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { decryptAES, base64ToBytes, derivePasswordKey } from '@zerochat/shared';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ export default function ReadMessage() {
   const [passwordError, setPasswordError] = useState('');
   const [ciphertext, setCiphertext] = useState<string | null>(null);
   const [fragmentData, setFragmentData] = useState<{ salt?: string; wrappedKey?: string; keyB64?: string }>({});
+  const fetchedRef = useRef(false);
 
   // Parse fragment on mount
   useEffect(() => {
@@ -44,6 +45,8 @@ export default function ReadMessage() {
     let cancelled = false;
 
     async function fetchCiphertext() {
+      if (fetchedRef.current) return; // prevent double-fetch in Strict Mode
+      fetchedRef.current = true;
       try {
         const res = await fetch(`/api/message/${id}/read`, { method: 'POST' });
         if (!res.ok) {
