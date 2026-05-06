@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { encryptAES, randomBytes, bytesToBase64 } from '@zerochat/shared';
+import { encryptAES, randomBytes, bytesToBase64, derivePasswordKey } from '@zerochat/shared';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import ImageUploader from '@/components/ImageUploader';
 import QRCode from '@/components/QRCode';
 import CopyButton from '@/components/CopyButton';
-import { ArrowLeft, Lock, Loader2 } from 'lucide-react';
+import { ArrowLeft, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function CreateMessage() {
@@ -14,8 +15,10 @@ export default function CreateMessage() {
   const [text, setText] = useState('');
   const [imageBytes, setImageBytes] = useState<ArrayBuffer | null>(null);
   const [imageType, setImageType] = useState<string>('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ url: string } | null>(null);
+  const [result, setResult] = useState<{ url: string; hasPassword: boolean } | null>(null);
   const [error, setError] = useState('');
 
   const hasContent = text.trim() || imageBytes;
@@ -36,11 +39,10 @@ export default function CreateMessage() {
         combined.set(imgArr, mimeBytes.length);
         plaintext = combined;
       } else {
-        plaintext = new TextEncoder().encode(text);
+        plaintext = new TextEncoder().encode(text.trim());
       }
 
       const encrypted = encryptAES(key, plaintext);
-      const keyB64 = bytesToBase64(key);
 
       const res = await fetch('/api/message', {
         method: 'POST',
@@ -54,8 +56,19 @@ export default function CreateMessage() {
       }
 
       const { id } = await res.json();
-      const url = `${window.location.origin}/read/${id}#${keyB64}`;
-      setResult({ url });
+
+      let url: string;
+      if (password) {
+        const salt = randomBytes(16);
+        const wrapKey = derivePasswordKey(password, salt);
+        const wrappedKey = encryptAES(wrapKey, key);
+        const fragment = bytesToBase64(salt) + ':' + bytesToBase64(wrappedKey);
+        url = `${window.location.origin}/read/${id}#${fragment}`;
+      } else {
+        url = `${window.location.origin}/read/${id}#${bytesToBase64(key)}`;
+      }
+
+      setResult({ url, hasPassword: !!password });
     } catch (err: any) {
       setError(err.message || '创建失败，请重试');
     } finally {
@@ -66,6 +79,7 @@ export default function CreateMessage() {
   function handleReset() {
     setText('');
     setImageBytes(null);
+    setPassword('');
     setResult(null);
     setError('');
   }
@@ -78,7 +92,11 @@ export default function CreateMessage() {
             <Lock className="w-6 h-6 text-green-600" />
           </div>
           <h2 className="text-lg font-semibold text-gray-900">加密链接已生成</h2>
-          <p className="text-sm text-gray-500 mt-1">分享下方链接，对方打开后消息自动销毁</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {result.hasPassword
+              ? '分享下方链接，对方需输入密码才能查看消息'
+              : '分享下方链接，对方打开后消息自动销毁'}
+          </p>
         </div>
 
         <Card>
@@ -135,6 +153,23 @@ export default function CreateMessage() {
           setImageType('');
         }}
       />
+
+      {/* Password field */}
+      <div className="relative">
+        <Input
+          type={showPassword ? 'text' : 'password'}
+          placeholder="设置访问密码（可选，留空则无密码）"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button
+          type="button"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          onClick={() => setShowPassword(!showPassword)}
+        >
+          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+      </div>
 
       {error && (
         <div className="bg-red-50 text-red-700 text-sm rounded-xl p-3">{error}</div>

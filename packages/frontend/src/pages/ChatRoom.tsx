@@ -71,7 +71,6 @@ export default function ChatRoom() {
   // Key exchange: send our key when we know someone is in the room and encryption not ready
   useEffect(() => {
     if (peerConnected && !isReady) {
-      console.debug('[ChatRoom] sending exchange-key');
       const exchangeData = getExchangeData();
       send({
         type: 'exchange-key',
@@ -84,13 +83,6 @@ export default function ChatRoom() {
   // Decrypt new incoming messages
   useEffect(() => {
     const last = encryptedMessages[encryptedMessages.length - 1];
-    console.debug('[ChatRoom] decrypt check:', {
-      hasLast: !!last,
-      processed: last ? processedRef.current.has(last.id) : false,
-      fromMe: last?.fromMe,
-      isReady,
-      totalEncrypted: encryptedMessages.length,
-    });
 
     if (!last || processedRef.current.has(last.id) || last.fromMe || !isReady) return;
 
@@ -98,7 +90,6 @@ export default function ChatRoom() {
 
     decryptMessage(last.encryptedData)
       .then((result) => {
-        console.debug('[ChatRoom] decrypt success:', result.isImage ? 'image' : result.content.slice(0, 20));
         addDecryptedMessage({
           id: last.id,
           ...result,
@@ -108,7 +99,7 @@ export default function ChatRoom() {
       })
       .catch((err) => {
         console.error('[ChatRoom] decrypt failed:', err);
-        processedRef.current.delete(last.id); // allow retry
+        processedRef.current.delete(last.id);
       });
   }, [encryptedMessages, isReady, decryptMessage, addDecryptedMessage]);
 
@@ -130,7 +121,6 @@ export default function ChatRoom() {
     setEncrypting(true);
     try {
       const encrypted = await encryptText(input.trim());
-      console.debug('[ChatRoom] sending encrypted message, length:', encrypted.length);
       send({ type: 'send-message', roomId, encryptedData: encrypted });
       addDecryptedMessage({
         id: crypto.randomUUID(),
@@ -260,7 +250,7 @@ export default function ChatRoom() {
       )}
 
       {/* Input area */}
-      <div className="border-t border-gray-200 pt-2 pb-4 px-1 safe-bottom bg-white">
+      <div className="border-t border-gray-200 pt-3 pb-6 px-1 safe-bottom bg-white">
         <div className="flex items-end gap-2">
           <button
             className="w-11 h-11 flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0"

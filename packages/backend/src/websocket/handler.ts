@@ -55,7 +55,6 @@ export async function handleMessage(ws: RoomSocket, raw: string): Promise<void> 
       ws.userId = userId;
       ws.roomId = roomId;
       clients.set(userId, ws);
-      console.log(`[WS] ${data.type}: userId=${userId.slice(0, 8)} roomId=${roomId.slice(0, 8)} clients=${clients.size}`);
       send(ws, { type: 'room-joined', roomId, userId });
       broadcastToRoom(roomId, { type: 'peer-joined', userId }, userId);
       break;
@@ -73,8 +72,6 @@ export async function handleMessage(ws: RoomSocket, raw: string): Promise<void> 
 
     case 'send-message': {
       if (!ws.roomId) return;
-      console.log(`[WS] forwarding message in room ${ws.roomId}, clients in room:`,
-        [...clients.entries()].filter(([_, c]) => c.roomId === ws.roomId).length);
       broadcastToRoom(ws.roomId, {
         type: 'new-message',
         encryptedData: data.encryptedData,
