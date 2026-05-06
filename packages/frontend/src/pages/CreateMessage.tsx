@@ -7,13 +7,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import ImageUploader from '@/components/ImageUploader';
 import QRCode from '@/components/QRCode';
 import CopyButton from '@/components/CopyButton';
-import { ArrowLeft, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useT } from '@/i18n/useT';
 
 export default function CreateMessage() {
   const { t } = useT();
-  const navigate = useNavigate();
   const [text, setText] = useState('');
   const [imageBytes, setImageBytes] = useState<ArrayBuffer | null>(null);
   const [imageType, setImageType] = useState<string>('');
@@ -132,25 +130,15 @@ export default function CreateMessage() {
         </Card>
 
         <QRCode url={result.url} />
-
-        <Button variant="ghost" className="w-full gap-2" onClick={() => navigate('/')}>
-          <ArrowLeft className="w-4 h-4" />
-          {t('create.back')}
-        </Button>
       </div>
     );
   }
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('create.title')}</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400">{t('create.subtitle')}</p>
-        </div>
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('create.title')}</h2>
+        <p className="text-xs text-gray-500 dark:text-gray-400">{t('create.subtitle')}</p>
       </div>
 
       <Textarea
