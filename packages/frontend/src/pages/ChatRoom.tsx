@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import MessageBubble from '@/components/MessageBubble';
 import ImageUploader from '@/components/ImageUploader';
-import { ArrowLeft, Send, AlertTriangle, Shield, ImageIcon, X, Loader2 } from 'lucide-react';
+import QRCode from '@/components/QRCode';
+import CopyButton from '@/components/CopyButton';
+import { ArrowLeft, Send, AlertTriangle, Shield, ImageIcon, X, Loader2, Share2 } from 'lucide-react';
 
 export default function ChatRoom() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -27,6 +29,7 @@ export default function ChatRoom() {
   const [input, setInput] = useState('');
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [destroyConfirm, setDestroyConfirm] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
   const [encrypting, setEncrypting] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const processedRef = useRef<Set<string>>(new Set());
@@ -136,33 +139,49 @@ export default function ChatRoom() {
   };
 
   const fingerprint = getFingerprint();
+  const inviteUrl = roomId ? `${window.location.origin}/chat?join=${roomId}` : '';
 
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
       <div className="flex items-center justify-between py-2 px-1 border-b border-gray-200 bg-gray-50">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => { disconnect(); reset(); navigate('/'); }}>
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="ghost" size="icon" className="flex-shrink-0" onClick={() => { disconnect(); reset(); navigate('/'); }}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div>
-            <p className="text-sm font-medium">加密聊天</p>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium truncate">加密聊天</p>
+              {roomId && (
+                <span className="text-xs text-gray-400 font-mono bg-gray-100 px-1.5 py-0.5 rounded truncate" title={roomId}>
+                  {roomId.slice(0, 8)}...
+                </span>
+              )}
+            </div>
             <p className="text-xs text-gray-500">
               {peerConnected ? (isReady ? '已加密' : '协商密钥中...') : '等待对方加入...'}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           <div className="flex items-center gap-1 text-xs text-gray-400">
             <Shield className="w-3 h-3" />
             {fingerprint}
           </div>
           <Button
+            variant="ghost"
+            size="icon"
+            title="邀请对方"
+            onClick={() => setShowInvite(true)}
+          >
+            <Share2 className="w-4 h-4" />
+          </Button>
+          <Button
             variant="destructive"
             size="sm"
             onClick={() => setDestroyConfirm(true)}
           >
-            销毁房间
+            销毁
           </Button>
         </div>
       </div>
@@ -232,6 +251,32 @@ export default function ChatRoom() {
           </Button>
         </div>
       </div>
+
+      {/* Invite dialog */}
+      {showInvite && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900">邀请对方加入</h3>
+              <button onClick={() => setShowInvite(false)}>
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3 break-all text-sm text-gray-800 font-mono">
+              {roomId}
+            </div>
+            <p className="text-xs text-gray-500">将房间 ID 或下方链接发送给对方，对方在首页点击"加入已有房间"输入即可</p>
+            <div className="bg-gray-50 rounded-lg p-3 break-all text-xs text-gray-600 font-mono">
+              {inviteUrl}
+            </div>
+            <div className="flex gap-2">
+              <CopyButton text={roomId!} label="复制房间号" />
+              <CopyButton text={inviteUrl} label="复制链接" />
+            </div>
+            <QRCode url={inviteUrl} />
+          </div>
+        </div>
+      )}
 
       {/* Destroy confirmation dialog */}
       {destroyConfirm && (

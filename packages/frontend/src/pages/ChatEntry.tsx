@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,11 +9,20 @@ import { useChatStore } from '@/stores/chatStore';
 
 export default function ChatEntry() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [roomInput, setRoomInput] = useState('');
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState('');
   const { connect } = useWebSocket();
+
+  // Pre-fill room ID from invite link
+  useEffect(() => {
+    const joinId = searchParams.get('join');
+    if (joinId) {
+      setRoomInput(joinId);
+    }
+  }, []);
 
   async function handleCreate() {
     setCreating(true);
