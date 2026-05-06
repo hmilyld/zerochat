@@ -39,13 +39,8 @@ export function useChatCrypto(roomId?: string) {
     const peerPubBytes = base64ToPublicKey(peerPublicKey);
     const sharedSecret = computeSharedSecret(keyPairRef.current.privateKey, peerPubBytes);
 
-    // Use roomId to derive salt so both parties compute the same key.
-    // If peer sent a salt, sort and combine both for mutual authentication.
-    const roomSalt = new TextEncoder().encode(roomId || 'zerochat');
-    const saltBytes = peerSalt
-      ? concatBytes(roomSalt, base64ToBytes(peerSalt))
-      : roomSalt;
-
+    // Both parties derive salt from roomId — guarantees identical AES keys
+    const saltBytes = new TextEncoder().encode(roomId || 'zerochat');
     const aesKeyRaw = deriveAESKey(sharedSecret, saltBytes, 'zerochat-room-key');
 
     importAesKey(aesKeyRaw).then((key) => {

@@ -83,18 +83,33 @@ export default function ChatRoom() {
   // Decrypt new incoming messages
   useEffect(() => {
     const last = encryptedMessages[encryptedMessages.length - 1];
+    console.debug('[ChatRoom] decrypt check:', {
+      hasLast: !!last,
+      processed: last ? processedRef.current.has(last.id) : false,
+      fromMe: last?.fromMe,
+      isReady,
+      totalEncrypted: encryptedMessages.length,
+    });
+
     if (!last || processedRef.current.has(last.id) || last.fromMe || !isReady) return;
 
     processedRef.current.add(last.id);
-    decryptMessage(last.encryptedData).then((result) => {
-      addDecryptedMessage({
-        id: last.id,
-        ...result,
-        fromMe: false,
-        timestamp: last.timestamp,
+
+    decryptMessage(last.encryptedData)
+      .then((result) => {
+        console.debug('[ChatRoom] decrypt success:', result.isImage ? 'image' : result.content.slice(0, 20));
+        addDecryptedMessage({
+          id: last.id,
+          ...result,
+          fromMe: false,
+          timestamp: last.timestamp,
+        });
+      })
+      .catch((err) => {
+        console.error('[ChatRoom] decrypt failed:', err);
+        processedRef.current.delete(last.id); // allow retry
       });
-    });
-  }, [encryptedMessages, isReady]);
+  }, [encryptedMessages, isReady, decryptMessage, addDecryptedMessage]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -114,6 +129,7 @@ export default function ChatRoom() {
     setEncrypting(true);
     try {
       const encrypted = await encryptText(input.trim());
+      console.debug('[ChatRoom] sending encrypted message, length:', encrypted.length);
       send({ type: 'send-message', roomId, encryptedData: encrypted });
       addDecryptedMessage({
         id: crypto.randomUUID(),

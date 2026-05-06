@@ -31,6 +31,7 @@ export function useWebSocket() {
         setPeerConnected(true);
         break;
       case 'new-message':
+        console.debug('[WS] adding encrypted message, data length:', msg.encryptedData.length);
         addEncryptedMessage({
           id: crypto.randomUUID(),
           encryptedData: msg.encryptedData,
@@ -74,6 +75,7 @@ export function useWebSocket() {
     socket.onmessage = (event) => {
       try {
         const msg: ServerMessage = JSON.parse(event.data);
+        console.debug('[WS] received:', msg.type);
         handleServerMessage(msg);
       } catch {
         console.error('Failed to parse server message');
