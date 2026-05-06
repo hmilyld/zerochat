@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home.tsx';
+import CreateMessage from './pages/CreateMessage.tsx';
 
 export default function App() {
   return (
@@ -7,6 +8,7 @@ export default function App() {
       <main className="mx-auto max-w-lg px-4 py-6">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/create" element={<CreateMessage />} />
         </Routes>
       </main>
     </div>
