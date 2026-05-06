@@ -41,10 +41,6 @@ export default function ChatRoom() {
   const joinedRef = useRef(false);
   const hadRoomRef = useRef(false);
 
-  // Diagnostic: log key state transitions
-  useEffect(() => {
-  }, [connected, peerConnected, roomId, peerPublicKey, isReady]);
-
   // Connect WebSocket on mount (reconnect on Strict Mode remount)
   useEffect(() => {
     const wsRef = { current: null as WebSocket | null };

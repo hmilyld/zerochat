@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, AlertTriangle, ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react';
 import { useT } from '@/i18n/useT';
+import { findNull } from '@/lib/utils';
 
 type Status = 'loading' | 'need-password' | 'verifying-password' | 'decrypting' | 'success-text' | 'success-image' | 'destroyed' | 'error';
 
@@ -245,12 +246,3 @@ export default function ReadMessage() {
         <ArrowLeft className="w-4 h-4" /> {t('read.back')}
       </Button>
     </div>
-  );
-}
-
-function findNull(bytes: Uint8Array, start: number): number {
-  for (let i = start; i < bytes.length; i++) {
-    if (bytes[i] === 0) return i;
-  }
-  return bytes.length;
-}

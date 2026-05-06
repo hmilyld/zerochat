@@ -7,6 +7,7 @@ export function setupWebSocket(httpServer: Server): WebSocketServer {
     server: httpServer,
     path: '/ws',
     perMessageDeflate: false,
+    maxPayload: 1024 * 1024, // 1MB per message
   });
 
   wss.on('connection', (ws: WebSocket) => {

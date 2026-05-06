@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { randomBase64Url } from '@zerochat/shared';
-import { createRoom as redisCreateRoom, joinRoom, getRoom } from '../redis/client.ts';
+import { createRoom as redisCreateRoom, joinRoom } from '../redis/client.ts';
 
 export const roomRouter = Router();
 

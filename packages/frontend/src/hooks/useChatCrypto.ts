@@ -13,6 +13,7 @@ import {
   decryptAES,
 } from '@zerochat/shared';
 import type { KeyPair } from '@zerochat/shared';
+import { findNull } from '@/lib/utils';
 
 export function useChatCrypto(roomId?: string) {
   const peerPublicKey = useChatStore((s) => s.peerPublicKey);
@@ -39,14 +40,6 @@ export function useChatCrypto(roomId?: string) {
     if (!aesKey) throw new Error('No AES key');
     const encoded = new TextEncoder().encode(text);
     return encryptAES(aesKey, encoded);
-  }, [aesKey]);
-
-  // Decrypt with @noble/ciphers AES-GCM
-  const decryptToText = useCallback(async (encryptedBase64: string): Promise<string> => {
-    if (!aesKey) throw new Error('No AES key');
-    const plaintext = decryptAES(aesKey, encryptedBase64);
-    if (!plaintext) throw new Error('Decryption failed');
-    return new TextDecoder().decode(plaintext);
   }, [aesKey]);
 
   // Encrypt an image
@@ -140,11 +133,4 @@ export function useChatCrypto(roomId?: string) {
     decryptMessage,
     isReady: !!aesKey,
   };
-}
-
-function findNull(bytes: Uint8Array, start: number): number {
-  for (let i = start; i < bytes.length; i++) {
-    if (bytes[i] === 0) return i;
-  }
-  return bytes.length;
 }
