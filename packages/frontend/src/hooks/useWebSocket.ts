@@ -28,6 +28,7 @@ export function useWebSocket() {
         break;
       case 'peer-public-key':
         setPeerKey(msg.publicKey, msg.salt);
+        setPeerConnected(true);
         break;
       case 'new-message':
         addEncryptedMessage({
@@ -56,6 +57,14 @@ export function useWebSocket() {
   }, []);
 
   const connect = useCallback(() => {
+    // Reuse existing connection if still open
+    const existing = useChatStore.getState().ws;
+    if (existing && existing.readyState === WebSocket.OPEN) {
+      setConnected(true);
+      setError(null);
+      return;
+    }
+
     const socket = new WebSocket(WS_BASE);
     socket.onopen = () => {
       setWs(socket);
