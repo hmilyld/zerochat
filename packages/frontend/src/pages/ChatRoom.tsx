@@ -32,6 +32,7 @@ export default function ChatRoom() {
   const [destroyConfirm, setDestroyConfirm] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [encrypting, setEncrypting] = useState(false);
+  const [remoteDestroyed, setRemoteDestroyed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const processedRef = useRef<Set<string>>(new Set());
   const initialConnectRef = useRef(false);
@@ -63,7 +64,7 @@ export default function ChatRoom() {
       hadRoomRef.current = true;
     } else if (hadRoomRef.current) {
       disconnect();
-      navigate('/', { replace: true });
+      setRemoteDestroyed(true);
     }
   }, [storeRoomId]);
 
@@ -312,6 +313,24 @@ export default function ChatRoom() {
               <CopyButton text={inviteUrl} label="复制链接" />
             </div>
             <QRCode url={inviteUrl} />
+          </div>
+        </div>
+      )}
+
+      {/* Remote destroyed dialog */}
+      {remoteDestroyed && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="w-8 h-8 text-orange-500" />
+              <div>
+                <h3 className="font-semibold text-gray-900">房间已销毁</h3>
+                <p className="text-sm text-gray-500">对方已销毁该房间，所有聊天记录已清除</p>
+              </div>
+            </div>
+            <Button className="w-full" onClick={() => navigate('/', { replace: true })}>
+              返回首页
+            </Button>
           </div>
         </div>
       )}

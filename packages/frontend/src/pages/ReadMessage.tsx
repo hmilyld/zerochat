@@ -24,7 +24,7 @@ export default function ReadMessage() {
 
     async function fetchAndDecrypt() {
       try {
-        const res = await fetch(`/api/message/${id}`);
+        const res = await fetch(`/api/message/${id}/read`, { method: 'POST' });
         if (!res.ok) {
           if (!cancelled) setStatus('destroyed');
           return;

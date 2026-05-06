@@ -49,3 +49,25 @@ messageRouter.get('/api/message/:id', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// POST variant — immune to browser prefetch
+messageRouter.post('/api/message/:id/read', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id || id.length > 64) {
+      res.status(400).json({ error: 'Invalid id' });
+      return;
+    }
+
+    const ciphertext = await getAndDeleteCiphertext(id);
+    if (!ciphertext) {
+      res.status(404).json({ error: '消息已销毁或链接无效' });
+      return;
+    }
+
+    res.json({ ciphertext });
+  } catch (err) {
+    console.error('POST /api/message/:id/read error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
