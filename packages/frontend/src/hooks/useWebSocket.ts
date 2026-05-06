@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useChatStore } from '@/stores/chatStore';
+import { randomId } from '@zerochat/shared';
 import type { ServerMessage } from '@zerochat/shared';
 
 let typingTimer: ReturnType<typeof setTimeout> | null = null;
@@ -34,7 +35,7 @@ export function useWebSocket() {
         break;
       case 'new-message':
         addEncryptedMessage({
-          id: crypto.randomUUID(),
+          id: randomId(),
           encryptedData: msg.encryptedData,
           fromMe: false,
           timestamp: Date.now(),

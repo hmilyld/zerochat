@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useChatStore } from '@/stores/chatStore';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useChatCrypto } from '@/hooks/useChatCrypto';
+import { randomId } from '@zerochat/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import MessageBubble from '@/components/MessageBubble';
@@ -136,7 +137,7 @@ export default function ChatRoom() {
       const encrypted = await encryptText(input.trim());
       send({ type: 'send-message', roomId, encryptedData: encrypted });
       addDecryptedMessage({
-        id: crypto.randomUUID(),
+        id: randomId(),
         content: input.trim(),
         isImage: false,
         fromMe: true,
@@ -160,7 +161,7 @@ export default function ChatRoom() {
       const blob = new Blob([bytes], { type: mimeType });
       const imageUrl = URL.createObjectURL(blob);
       addDecryptedMessage({
-        id: crypto.randomUUID(),
+        id: randomId(),
         content: caption,
         isImage: true,
         imageUrl,
