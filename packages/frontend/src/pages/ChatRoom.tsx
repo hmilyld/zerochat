@@ -50,7 +50,7 @@ export default function ChatRoom() {
     // Don't reuse — always create fresh. connect() checks for existing OPEN socket.
     const setup = () => {
       const existing = useChatStore.getState().ws;
-      if (existing && existing.readyState === WebSocket.OPEN) return;
+      if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) return;
       connect();
     };
 

@@ -61,7 +61,7 @@ export function useWebSocket() {
   const connect = useCallback(() => {
     // Reuse existing connection if still open
     const existing = useChatStore.getState().ws;
-    if (existing && existing.readyState === WebSocket.OPEN) {
+    if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) {
       console.warn('[WS] reusing existing socket');
       setConnected(true);
       setError(null);
