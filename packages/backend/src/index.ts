@@ -1,3 +1,4 @@
+import './env.ts'; // load .env.local / .env.production based on NODE_ENV
 import express from 'express';
 import { createServer } from 'http';
 import helmet from 'helmet';
