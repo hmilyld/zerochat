@@ -21,7 +21,7 @@
 | 后端 | Node.js 22, Express 5, ws, TypeScript |
 | 存储 | Redis 7 (ioredis) |
 | 加密 | @noble/ciphers (AES-GCM), @noble/curves (X25519), @noble/hashes (HKDF, PBKDF2) |
-| 部署 | Docker Compose (Nginx + Node + Redis) |
+| 部署 | Docker Compose (Node + Redis, 前端独立部署) |
 
 ## 项目结构
 
@@ -62,18 +62,17 @@ pnpm dev:frontend
 ### 生产部署（Docker）
 
 ```bash
-# 设置环境变量
-cp .env.example .env.production
-# 编辑 .env.production 填入实际配置
-
+echo 'REDIS_PASSWORD=你的密码' > .env.production
 docker compose up -d
 ```
+前端端口 5173，后端端口 3001。使用反向代理（Nginx/OpenResty/Caddy）配置 HTTPS。
 
 ## 环境变量
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
 | `REDIS_URL` | *必填* | Redis 连接字符串 |
+| `REDIS_PASSWORD` | *必填* | Redis 密码（docker-compose 使用） |
 | `PORT` | 3001 | 后端 HTTP 端口 |
 | `CORS_ORIGIN` | `http://localhost:5173` | 允许的跨域来源 |
 | `MESSAGE_TTL_SECONDS` | 3600 | 一次性消息默认存活时间（秒） |
@@ -89,7 +88,7 @@ docker compose up -d
 - **AES-256-GCM** — 认证加密，每条消息独立随机 12 字节 nonce。
 - **URL Fragment 传密** — 一次性消息解密密钥放在 URL hash 中，浏览器不会发送到服务器。
 - **速率限制** — 所有 API 端点均有 IP 级别频率限制。
-- **CSP 策略** — 生产环境 Nginx 配置 Content-Security-Policy 头部。
+- **CSP 策略** — 生产环境在反向代理中配置 Content-Security-Policy 头部。
 - **零追踪** — 无账号系统、无 Cookie、无分析统计。
 
 ## 许可证

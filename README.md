@@ -21,7 +21,7 @@ End-to-end encrypted ephemeral messaging. One-time burn-after-reading messages a
 | Backend | Node.js 22, Express 5, ws, TypeScript |
 | Storage | Redis 7 (ioredis) |
 | Crypto | @noble/ciphers (AES-GCM), @noble/curves (X25519), @noble/hashes (HKDF, PBKDF2) |
-| Deployment | Docker Compose (Nginx + Node + Redis) |
+| Deployment | Docker Compose (Node + Redis, frontend served standalone) |
 
 ## Project Structure
 
@@ -62,17 +62,17 @@ pnpm dev:frontend
 ### Production (Docker)
 
 ```bash
-cp .env.example .env.production
-# Edit .env.production with your settings
-
+echo 'REDIS_PASSWORD=your_password' > .env.production
 docker compose up -d
 ```
+Frontend on port 5173, backend on port 3001. Use a reverse proxy (Nginx/OpenResty/Caddy) for HTTPS.
 
 ## Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `REDIS_URL` | *required* | Redis connection string |
+| `REDIS_PASSWORD` | *required* | Redis password (docker-compose) |
 | `PORT` | 3001 | Backend HTTP port |
 | `CORS_ORIGIN` | `http://localhost:5173` | Allowed CORS origin |
 | `MESSAGE_TTL_SECONDS` | 3600 | Default one-time message expiry (seconds) |
@@ -88,7 +88,7 @@ Env files: `.env` (base) → `.env.local` (dev) / `.env.production` (prod).
 - **AES-256-GCM** — authenticated encryption with random 12-byte nonce per message.
 - **URL fragment** — one-time message keys transmitted in the URL fragment (never sent to the server).
 - **Rate limiting** — all API endpoints rate-limited per IP.
-- **CSP headers** — Content-Security-Policy in production Nginx config.
+- **CSP headers** — configure Content-Security-Policy in your reverse proxy for production.
 - **No tracking** — no accounts, no cookies, no analytics.
 
 ## License
