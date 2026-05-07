@@ -45,7 +45,7 @@ function PageWrapper({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <div className="py-4 text-center text-xs text-gray-400 dark:text-gray-500">
-        ZeroChat &copy; {new Date().getFullYear()}
+        ZeroChat &copy; zchat.cc {new Date().getFullYear()}
       </div>
     </div>
   );
