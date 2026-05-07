@@ -281,7 +281,7 @@ export default function ChatRoom() {
       )}
 
       {/* Input area */}
-      <div className="border-t border-gray-200 dark:border-gray-700 py-3 px-3 safe-bottom bg-white dark:bg-gray-900">
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-3 pb-8 px-3 safe-bottom bg-white dark:bg-gray-900">
         <div className="flex items-end gap-2">
           <button
             className="w-11 h-11 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"

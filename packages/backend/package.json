@@ -9,17 +9,16 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@types/cors": "^2.8.17",
+    "@zerochat/shared": "workspace:*",
+    "express": "^5.1.0",
+    "ws": "^8.18.0",
+    "ioredis": "^5.5.0",
+    "helmet": "^8.0.0",
+    "cors": "^2.8.5",
+    "express-rate-limit": "^7.5.0",
     "@types/express": "^5.0.0",
     "@types/ws": "^8.5.13",
-    "@zerochat/shared": "workspace:*",
-    "cors": "^2.8.5",
-    "dotenv": "^17.4.2",
-    "express": "^5.1.0",
-    "express-rate-limit": "^7.5.0",
-    "helmet": "^8.0.0",
-    "ioredis": "^5.5.0",
-    "ws": "^8.18.0"
+    "@types/cors": "^2.8.17"
   },
   "devDependencies": {
     "tsx": "^4.19.0",
