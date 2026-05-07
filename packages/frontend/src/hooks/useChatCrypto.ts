@@ -4,7 +4,6 @@ import {
   base64ToPublicKey,
   publicKeyToBase64,
   bytesToBase64,
-  base64ToBytes,
   randomBytes,
   generateKeyPair,
   computeSharedSecret,

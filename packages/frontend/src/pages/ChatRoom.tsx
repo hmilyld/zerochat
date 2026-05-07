@@ -45,19 +45,12 @@ export default function ChatRoom() {
 
   // Connect WebSocket on mount (reconnect on Strict Mode remount)
   useEffect(() => {
-    const wsRef = { current: null as WebSocket | null };
-
     const setup = () => {
       const existing = useChatStore.getState().ws;
       if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) return;
       connect();
     };
-
     setup();
-
-    return () => {
-      // Only disconnect on final unmount (not Strict Mode remount)
-    };
   }, []);
 
   // Send join-room once connected
@@ -120,15 +113,16 @@ export default function ChatRoom() {
     }
   }, [decryptedMessages]);
 
-  // Typing indicator
+  // Typing indicator (debounced)
   useEffect(() => {
     if (!input.trim() || !isReady) return;
-    send({ type: 'typing', roomId });
+    const timer = setTimeout(() => send({ type: 'typing', roomId }), 300);
+    return () => clearTimeout(timer);
   }, [input]);
 
   // Idle countdown timer
   useEffect(() => {
-    const IDLE_TIMEOUT = 3600; // matches ROOM_IDLE_SECONDS default
+    const IDLE_TIMEOUT = 3600;
     const tick = () => {
       const remaining = IDLE_TIMEOUT - Math.floor((Date.now() - lastActivityRef.current) / 1000);
       setIdleSeconds(Math.max(0, remaining));
@@ -136,7 +130,7 @@ export default function ChatRoom() {
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [decryptedMessages]); // reset on new messages
+  }, []);
 
   const handleSendText = useCallback(async () => {
     if (!input.trim() || !isReady || encrypting) return;
@@ -275,7 +269,6 @@ export default function ChatRoom() {
           </div>
           <ImageUploader
             onImageReady={(bytes, mimeType) => handleSendImage(bytes, mimeType)}
-            onClear={() => {}}
           />
         </div>
       )}

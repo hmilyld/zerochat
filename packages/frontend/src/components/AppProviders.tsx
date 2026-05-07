@@ -26,9 +26,7 @@ export default function AppProviders() {
     } else {
       root.classList.remove('dark');
     }
-  }, [resolved]);
 
-  useEffect(() => {
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
       meta.setAttribute('content', resolved === 'dark' ? '#0f172a' : '#2563eb');

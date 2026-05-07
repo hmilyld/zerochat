@@ -6,7 +6,7 @@ import { useT } from '@/i18n/useT';
 
 interface Props {
   onImageReady: (bytes: ArrayBuffer, mimeType: string) => void;
-  onClear: () => void;
+  onClear?: () => void;
 }
 
 export default function ImageUploader({ onImageReady, onClear }: Props) {
@@ -42,7 +42,7 @@ export default function ImageUploader({ onImageReady, onClear }: Props) {
   function handleClear() {
     if (preview) URL.revokeObjectURL(preview);
     setPreview(null);
-    onClear();
+    onClear?.();
   }
 
   return (
