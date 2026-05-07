@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import ImageUploader from '@/components/ImageUploader';
 import QRCode from '@/components/QRCode';
 import CopyButton from '@/components/CopyButton';
-import { Lock, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Lock, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useT } from '@/i18n/useT';
 
 export default function CreateMessage() {
@@ -131,6 +131,13 @@ export default function CreateMessage() {
         </Card>
 
         <QRCode url={result.url} />
+
+        <div className="flex justify-center mt-2">
+          <Button variant="ghost" size="sm" onClick={handleReset}>
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            {t('create.back')}
+          </Button>
+        </div>
       </div>
     );
   }
