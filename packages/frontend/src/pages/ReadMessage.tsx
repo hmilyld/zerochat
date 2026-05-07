@@ -246,3 +246,5 @@ export default function ReadMessage() {
         <ArrowLeft className="w-4 h-4" /> {t('read.back')}
       </Button>
     </div>
+  );
+}
