@@ -6,9 +6,10 @@ import { execSync } from 'child_process';
 
 function getVersion(): string {
   try {
+    if (process.env.APP_VERSION) return `v${process.env.APP_VERSION}`;
     const date = execSync('git log -1 --format=%cd --date=format:%Y%m%d').toString().trim();
     const hash = execSync('git rev-parse --short HEAD').toString().trim();
-    return `${date}-${hash}`;
+    return `v${date}-${hash}`;
   } catch {
     return 'dev';
   }

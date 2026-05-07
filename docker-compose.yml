@@ -27,6 +27,8 @@ services:
     build:
       context: .
       dockerfile: packages/frontend/Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
     ports:
       - "${FRONTEND_PORT:-5173}:5173"
     depends_on:
