@@ -63,7 +63,7 @@ pnpm dev:frontend
 
 ```bash
 echo 'REDIS_PASSWORD=你的密码' > .env.production
-docker compose up -d
+docker compose --env-file .env.production up -d
 ```
 前端端口 5173，后端端口 3001。使用反向代理（Nginx/OpenResty/Caddy）配置 HTTPS。
 

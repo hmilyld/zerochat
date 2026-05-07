@@ -63,7 +63,7 @@ pnpm dev:frontend
 
 ```bash
 echo 'REDIS_PASSWORD=your_password' > .env.production
-docker compose up -d
+docker compose --env-file .env.production up -d
 ```
 Frontend on port 5173, backend on port 3001. Use a reverse proxy (Nginx/OpenResty/Caddy) for HTTPS.
 
