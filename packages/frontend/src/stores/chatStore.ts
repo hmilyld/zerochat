@@ -14,6 +14,7 @@ export interface DecryptedMessage {
   imageUrl?: string;
   fromMe: boolean;
   timestamp: number;
+  isSystem?: boolean;
 }
 
 interface ChatState {

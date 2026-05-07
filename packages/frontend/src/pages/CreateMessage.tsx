@@ -120,11 +120,12 @@ export default function CreateMessage() {
 
         <Card>
           <CardContent className="p-4 space-y-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('create.sharePreface')}</p>
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 break-all text-sm text-gray-800 dark:text-gray-100 font-mono">
               {result.url}
             </div>
             <div className="flex gap-2">
-              <CopyButton text={result.url} />
+              <CopyButton text={result.url} preface={t('create.sharePreface')} />
               <Button variant="outline" onClick={handleReset}>{t('create.another')}</Button>
             </div>
           </CardContent>

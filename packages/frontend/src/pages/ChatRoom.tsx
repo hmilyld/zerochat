@@ -248,9 +248,17 @@ export default function ChatRoom() {
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto py-3 px-1">
-        {decryptedMessages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
-        ))}
+        {decryptedMessages.map((msg) =>
+          msg.isSystem ? (
+            <div key={msg.id} className="flex justify-center mb-3">
+              <span className="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
+                {msg.content}
+              </span>
+            </div>
+          ) : (
+            <MessageBubble key={msg.id} message={msg} />
+          )
+        )}
         {peerTyping && (
           <div className="flex justify-start mb-3">
             <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl rounded-bl-md px-4 py-2.5 shadow-sm">
@@ -325,12 +333,13 @@ export default function ChatRoom() {
               {roomId}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">{t('chat.inviteDesc')}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">{t('chat.sharePreface')}</p>
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 break-all text-xs text-gray-600 dark:text-gray-400 font-mono">
               {inviteUrl}
             </div>
             <div className="flex gap-2">
               <CopyButton text={roomId!} label={t('chat.copyRoomId')} />
-              <CopyButton text={inviteUrl} label={t('chat.copyLink')} />
+              <CopyButton text={inviteUrl} preface={t('chat.sharePreface')} label={t('chat.copyLink')} />
             </div>
             <QRCode url={inviteUrl} />
           </div>

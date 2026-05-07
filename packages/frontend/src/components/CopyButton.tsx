@@ -6,20 +6,22 @@ import { useT } from '@/i18n/useT';
 interface Props {
   text: string;
   label?: string;
+  preface?: string;
 }
 
-export default function CopyButton({ text, label }: Props) {
+export default function CopyButton({ text, label, preface }: Props) {
   const { t } = useT();
   const [copied, setCopied] = useState(false);
+  const copyText = preface ? `${preface}\n${text}` : text;
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(copyText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       const ta = document.createElement('textarea');
-      ta.value = text;
+      ta.value = copyText;
       ta.style.position = 'fixed';
       ta.style.opacity = '0';
       document.body.appendChild(ta);

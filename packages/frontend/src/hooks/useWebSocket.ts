@@ -1,22 +1,26 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useChatStore } from '@/stores/chatStore';
 import { randomId } from '@zerochat/shared';
 import type { ServerMessage } from '@zerochat/shared';
+import { useT } from '@/i18n/useT';
 
 let typingTimer: ReturnType<typeof setTimeout> | null = null;
 
 const WS_BASE = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
 
 export function useWebSocket() {
+  const { t } = useT();
   const setWs = useChatStore((s) => s.setWs);
   const setConnected = useChatStore((s) => s.setConnected);
   const setRoomInfo = useChatStore((s) => s.setRoomInfo);
   const setPeerKey = useChatStore((s) => s.setPeerKey);
   const addEncryptedMessage = useChatStore((s) => s.addEncryptedMessage);
+  const addDecryptedMessage = useChatStore((s) => s.addDecryptedMessage);
   const setPeerTyping = useChatStore((s) => s.setPeerTyping);
   const setPeerConnected = useChatStore((s) => s.setPeerConnected);
   const setError = useChatStore((s) => s.setError);
   const reset = useChatStore((s) => s.reset);
+  const peerJoinedRef = useRef(false);
 
   const handleServerMessage = useCallback((msg: ServerMessage) => {
     switch (msg.type) {
@@ -28,6 +32,17 @@ export function useWebSocket() {
         break;
       case 'peer-joined':
         setPeerConnected(true);
+        if (!peerJoinedRef.current) {
+          peerJoinedRef.current = true;
+          addDecryptedMessage({
+            id: randomId(),
+            content: t('chat.peerJoined'),
+            isImage: false,
+            fromMe: false,
+            timestamp: Date.now(),
+            isSystem: true,
+          });
+        }
         break;
       case 'peer-public-key':
         setPeerKey(msg.publicKey, msg.salt);
