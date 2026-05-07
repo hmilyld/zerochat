@@ -20,7 +20,6 @@ export default function ChatRoom() {
   const { connect, send, disconnect } = useWebSocket();
   const peerConnected = useChatStore((s) => s.peerConnected);
   const peerPublicKey = useChatStore((s) => s.peerPublicKey);
-  const connected = useChatStore((s) => s.connected);
   const decryptedMessages = useChatStore((s) => s.decryptedMessages);
   const encryptedMessages = useChatStore((s) => s.encryptedMessages);
   const addDecryptedMessage = useChatStore((s) => s.addDecryptedMessage);
@@ -43,23 +42,30 @@ export default function ChatRoom() {
   const hadRoomRef = useRef(false);
   const lastActivityRef = useRef(Date.now());
 
-  // Connect WebSocket on mount (reconnect on Strict Mode remount)
+  // Connect WebSocket and join room on mount
   useEffect(() => {
-    const setup = () => {
-      const existing = useChatStore.getState().ws;
-      if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) return;
-      connect();
-    };
-    setup();
-  }, []);
-
-  // Send join-room once connected
-  useEffect(() => {
-    if (connected && roomId && !joinedRef.current) {
-      joinedRef.current = true;
-      send({ type: 'join-room', roomId });
+    const existing = useChatStore.getState().ws;
+    if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) {
+      if (!joinedRef.current && roomId) {
+        joinedRef.current = true;
+        send({ type: 'join-room', roomId });
+      }
+      return;
     }
-  }, [connected, roomId]);
+
+    connect();
+    // Wait for onopen, then send join-room
+    let timer: ReturnType<typeof setInterval>;
+    timer = setInterval(() => {
+      const state = useChatStore.getState();
+      if (state.connected && roomId && !joinedRef.current) {
+        joinedRef.current = true;
+        clearInterval(timer);
+        state.ws!.send(JSON.stringify({ type: 'join-room', roomId }));
+      }
+    }, 100);
+    return () => clearInterval(timer);
+  }, []);
 
   // Watch for remote room destruction (reset via WebSocket handler)
   useEffect(() => {
