@@ -9,24 +9,26 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@zerochat/shared": "workspace:*",
     "@noble/ciphers": "^1.2.1",
     "@noble/curves": "^1.8.1",
     "@noble/hashes": "^1.7.1",
+    "@radix-ui/react-dialog": "^1.1.0",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@zerochat/shared": "workspace:*",
     "browser-image-compression": "^2.0.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.0",
-    "zustand": "^5.0.0",
-    "lucide-react": "^0.468.0",
-    "@radix-ui/react-dialog": "^1.1.0",
-    "@radix-ui/react-slot": "^1.1.0",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^2.6.0"
+    "tailwind-merge": "^2.6.0",
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/node": "^25.6.0",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
@@ -34,7 +36,6 @@
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
     "tailwindcss": "^4.0.0",
-    "@tailwindcss/vite": "^4.0.0",
     "typescript": "^5.7.0",
     "vite": "^6.0.0"
   }

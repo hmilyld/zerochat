@@ -21,6 +21,8 @@ export function useWebSocket() {
   const handleServerMessage = useCallback((msg: ServerMessage) => {
     switch (msg.type) {
       case 'room-created':
+        setRoomInfo(msg.roomId, '');
+        break;
       case 'room-joined':
         setRoomInfo(msg.roomId, msg.userId);
         break;

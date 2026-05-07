@@ -16,7 +16,6 @@ import { findNull } from '@/lib/utils';
 
 export function useChatCrypto(roomId?: string) {
   const peerPublicKey = useChatStore((s) => s.peerPublicKey);
-  const peerSalt = useChatStore((s) => s.peerSalt);
   const aesKey = useChatStore((s) => s.aesKey);
   const setAesKey = useChatStore((s) => s.setAesKey);
 
