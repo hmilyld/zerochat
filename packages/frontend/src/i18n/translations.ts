@@ -4,6 +4,7 @@ const zh: Translations = {
   'app.name': 'ZeroChat',
   'app.tagline': '加密通讯，零信任架构',
   'app.footer': '无需注册 · 不收集信息 · 端到端加密',
+  'app.description': '零信任架构的端到端加密通讯工具，阅后即焚，无需注册',
 
   'nav.oneTime': '一次性消息',
   'nav.chat': '加密聊天',
@@ -95,6 +96,7 @@ const en: Translations = {
   'app.name': 'ZeroChat',
   'app.tagline': 'Private Communication, Zero Trust',
   'app.footer': 'No Registration · No Tracking · End-to-End Encrypted',
+  'app.description': 'Zero-trust end-to-end encrypted communication. Burn after reading. No registration needed.',
 
   'nav.oneTime': 'One-Time Message',
   'nav.chat': 'Encrypted Chat',
@@ -186,6 +188,7 @@ const ja: Translations = {
   'app.name': 'ZeroChat',
   'app.tagline': 'プライベート通信、ゼロトラスト',
   'app.footer': '登録不要 · 追跡なし · エンドツーエンド暗号化',
+  'app.description': 'ゼロトラストのエンドツーエンド暗号化通信。既読後消去。登録不要。',
 
   'nav.oneTime': '一度きりのメッセージ',
   'nav.chat': '暗号化チャット',
@@ -277,6 +280,7 @@ const ko: Translations = {
   'app.name': 'ZeroChat',
   'app.tagline': '비공개 통신, 제로 트러스트',
   'app.footer': '등록 불필요 · 추적 없음 · 종단간 암호화',
+  'app.description': '제로 트러스트 종단간 암호화 통신. 열람 후 소멸. 등록 불필요.',
 
   'nav.oneTime': '일회성 메시지',
   'nav.chat': '암호화 채팅',
@@ -368,6 +372,7 @@ const ru: Translations = {
   'app.name': 'ZeroChat',
   'app.tagline': 'Приватная связь, нулевое доверие',
   'app.footer': 'Без регистрации · Без отслеживания · Сквозное шифрование',
+  'app.description': 'Сквозное шифрование с нулевым доверием. Самоуничтожение после прочтения. Без регистрации.',
 
   'nav.oneTime': 'Одноразовое сообщение',
   'nav.chat': 'Шифрованный чат',

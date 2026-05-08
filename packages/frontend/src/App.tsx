@@ -8,7 +8,18 @@ import About from './pages/About.tsx';
 import ThemeToggle from './components/ThemeToggle.tsx';
 import LocaleToggle from './components/LocaleToggle.tsx';
 import { useT } from '@/i18n/useT';
+import { useLocaleStore } from '@/stores/localeStore';
 import { Shield } from 'lucide-react';
+
+function setMeta(name: string, content: string) {
+  let el = document.querySelector(`meta[name="${name}"], meta[property="${name}"]`) as HTMLMetaElement | null;
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(name.startsWith('og:') ? 'property' : 'name', name);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+}
 
 function Header() {
   const { t } = useT();
@@ -57,6 +68,11 @@ export default function App() {
 
   useEffect(() => {
     document.title = `${t('app.name')} - ${t('app.tagline')}`;
+    document.documentElement.lang = useLocaleStore.getState().locale;
+    const desc = t('app.description');
+    setMeta('description', desc);
+    setMeta('og:title', t('app.name'));
+    setMeta('og:description', desc);
   }, [t]);
 
   return (
