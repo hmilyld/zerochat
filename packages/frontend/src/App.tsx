@@ -1,4 +1,5 @@
 import { Routes, Route, Link } from 'react-router-dom';
+import { useEffect } from 'react';
 import CreateMessage from './pages/CreateMessage.tsx';
 import ReadMessage from './pages/ReadMessage.tsx';
 import ChatEntry from './pages/ChatEntry.tsx';
@@ -52,6 +53,12 @@ function PageWrapper({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { t } = useT();
+
+  useEffect(() => {
+    document.title = `${t('app.name')} - ${t('app.tagline')}`;
+  }, [t]);
+
   return (
     <Routes>
       <Route path="/" element={<PageWrapper><CreateMessage /></PageWrapper>} />

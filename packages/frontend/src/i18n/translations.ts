@@ -2,7 +2,7 @@ type Translations = Record<string, string>;
 
 const zh: Translations = {
   'app.name': 'ZeroChat',
-  'app.tagline': '私密通讯，零信任架构',
+  'app.tagline': '加密通讯，零信任架构',
   'app.footer': '无需注册 · 不收集信息 · 端到端加密',
 
   'nav.oneTime': '一次性消息',
