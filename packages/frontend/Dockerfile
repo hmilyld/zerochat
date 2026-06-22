@@ -8,6 +8,11 @@ RUN npm install -g pnpm@10 && pnpm install --frozen-lockfile
 COPY packages/shared/ packages/shared/
 COPY packages/frontend/ packages/frontend/
 ENV APP_VERSION=${APP_VERSION}
+RUN if [ -n "${APP_VERSION}" ]; then \
+      echo "v${APP_VERSION}" > packages/frontend/.version; \
+    else \
+      echo "v$(date +%Y%m%d)-docker" > packages/frontend/.version; \
+    fi
 RUN cd packages/frontend && pnpm build
 
 FROM node:22-alpine

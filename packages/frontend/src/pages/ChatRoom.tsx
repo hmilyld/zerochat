@@ -18,6 +18,7 @@ export default function ChatRoom() {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
   const { connect, send, disconnect } = useWebSocket();
+  const connected = useChatStore((s) => s.connected);
   const peerConnected = useChatStore((s) => s.peerConnected);
   const peerPublicKey = useChatStore((s) => s.peerPublicKey);
   const decryptedMessages = useChatStore((s) => s.decryptedMessages);
@@ -42,30 +43,22 @@ export default function ChatRoom() {
   const hadRoomRef = useRef(false);
   const lastActivityRef = useRef(Date.now());
 
-  // Connect WebSocket and join room on mount
+  // Connect WebSocket on mount
   useEffect(() => {
     const existing = useChatStore.getState().ws;
     if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) {
-      if (!joinedRef.current && roomId) {
-        joinedRef.current = true;
-        send({ type: 'join-room', roomId });
-      }
       return;
     }
-
     connect();
-    // Wait for onopen, then send join-room
-    let timer: ReturnType<typeof setInterval>;
-    timer = setInterval(() => {
-      const state = useChatStore.getState();
-      if (state.connected && roomId && !joinedRef.current) {
-        joinedRef.current = true;
-        clearInterval(timer);
-        state.ws!.send(JSON.stringify({ type: 'join-room', roomId }));
-      }
-    }, 100);
-    return () => clearInterval(timer);
   }, []);
+
+  // Join room when connected
+  useEffect(() => {
+    if (connected && roomId && !joinedRef.current) {
+      joinedRef.current = true;
+      send({ type: 'join-room', roomId });
+    }
+  }, [connected, roomId]);
 
   // Watch for remote room destruction (reset via WebSocket handler)
   useEffect(() => {
