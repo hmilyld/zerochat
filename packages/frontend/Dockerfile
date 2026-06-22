@@ -20,4 +20,4 @@ WORKDIR /app
 RUN npm install -g serve
 COPY --from=builder /app/packages/frontend/dist /app/dist
 EXPOSE 5173
-CMD ["serve", "-s", "dist", "-l", "5173"]
+CMD ["serve", "-s", "dist", "-l", "0.0.0.0:5173"]
