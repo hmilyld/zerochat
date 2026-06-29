@@ -25,11 +25,8 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Install pnpm
-        run: corepack prepare pnpm@10 --activate
+        run: npm install -g pnpm@10
 
       - name: Get pnpm store directory
         shell: bash
