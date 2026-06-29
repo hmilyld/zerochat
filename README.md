@@ -21,7 +21,7 @@ End-to-end encrypted ephemeral messaging. One-time burn-after-reading messages a
 | Backend | Node.js 22, Express 5, ws, TypeScript |
 | Storage | Redis 7 (ioredis) |
 | Crypto | @noble/ciphers (AES-GCM), @noble/curves (X25519), @noble/hashes (HKDF, PBKDF2) |
-| Deployment | Docker Compose (Node + Redis, frontend served standalone) |
+| Deployment | Docker (unified / multi-image), GitHub Actions CI/CD |
 
 ## Project Structure
 
@@ -59,13 +59,43 @@ pnpm dev:backend
 pnpm dev:frontend
 ```
 
-### Production (Docker)
+### Production (Docker Unified Image, Recommended)
+
+```bash
+echo 'REDIS_PASSWORD=your_password' > .env
+make docker-unified-up
+```
+
+### Production (Docker Multi-Image)
 
 ```bash
 echo 'REDIS_PASSWORD=your_password' > .env.production
 docker compose --env-file .env.production up -d
 ```
-Frontend on port 5173, backend on port 3001. Use a reverse proxy (Nginx/OpenResty/Caddy) for HTTPS.
+
+Ports: Frontend 5173, Backend 3001, Redis 6379. Use a reverse proxy (Nginx/OpenResty/Caddy) for HTTPS.
+
+### CI/CD Auto Deploy
+
+Push to `master` branch triggers GitHub Actions to build and push Docker images to Docker Hub.
+
+**Required GitHub Secrets:**
+
+| Secret | Description |
+|--------|-------------|
+| `DOCKER_USERNAME` | Docker Hub username |
+| `DOCKER_PASSWORD` | Docker Hub Access Token |
+
+### Docker Commands
+
+```bash
+make docker-build         # Build unified image
+make docker-push          # Push image to Docker Hub
+make docker-deploy        # Deploy application
+make docker-status        # Check service status
+make docker-logs          # View logs
+make docker-cleanup       # Clean up Docker resources
+```
 
 ## Environment Variables
 

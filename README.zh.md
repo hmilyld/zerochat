@@ -21,7 +21,7 @@
 | 后端 | Node.js 22, Express 5, ws, TypeScript |
 | 存储 | Redis 7 (ioredis) |
 | 加密 | @noble/ciphers (AES-GCM), @noble/curves (X25519), @noble/hashes (HKDF, PBKDF2) |
-| 部署 | Docker Compose (Node + Redis, 前端独立部署) |
+| 部署 | Docker (统一镜像 / 三镜像), GitHub Actions CI/CD |
 
 ## 项目结构
 
@@ -59,13 +59,43 @@ pnpm dev:backend
 pnpm dev:frontend
 ```
 
-### 生产部署（Docker）
+### 生产部署（Docker 统一镜像，推荐）
+
+```bash
+echo 'REDIS_PASSWORD=你的密码' > .env
+make docker-unified-up
+```
+
+### 生产部署（Docker 三镜像架构）
 
 ```bash
 echo 'REDIS_PASSWORD=你的密码' > .env.production
 docker compose --env-file .env.production up -d
 ```
-前端端口 5173，后端端口 3001。使用反向代理（Nginx/OpenResty/Caddy）配置 HTTPS。
+
+端口：前端 5173，后端 3001，Redis 6379。使用反向代理（Nginx/OpenResty/Caddy）配置 HTTPS。
+
+### CI/CD 自动部署
+
+推送代码到 `master` 分支后，GitHub Actions 自动构建并推送 Docker 镜像到 Docker Hub。
+
+**需要配置的 GitHub Secrets：**
+
+| Secret | 说明 |
+|--------|------|
+| `DOCKER_USERNAME` | Docker Hub 用户名 |
+| `DOCKER_PASSWORD` | Docker Hub Access Token |
+
+### Docker 常用命令
+
+```bash
+make docker-build         # 构建统一镜像
+make docker-push          # 推送镜像到 Docker Hub
+make docker-deploy        # 部署应用
+make docker-status        # 查看服务状态
+make docker-logs          # 查看日志
+make docker-cleanup       # 清理 Docker 资源
+```
 
 ## 环境变量
 
