@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.unified
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
+    ports:
+      - "${PORT:-3001}:3001"
+      - "${FRONTEND_PORT:-5173}:5173"
+      - "127.0.0.1:6379:6379"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost}
+      - MESSAGE_TTL_SECONDS=${MESSAGE_TTL_SECONDS:-3600}
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:

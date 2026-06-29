@@ -1,0 +1,38 @@
+FROM node:22-alpine
+
+# 安装Redis和进程管理工具
+RUN apk add --no-cache redis supervisor && \
+    npm install -g pnpm@10 serve
+
+WORKDIR /app
+
+# 复制依赖文件
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml tsconfig.base.json ./
+COPY packages/shared/package.json packages/shared/
+COPY packages/backend/package.json packages/backend/
+COPY packages/frontend/package.json packages/frontend/
+
+# 安装依赖
+RUN pnpm install --frozen-lockfile
+
+# 复制源码
+COPY packages/shared/ packages/shared/
+COPY packages/backend/ packages/backend/
+COPY packages/frontend/ packages/frontend/
+
+# 构建前端
+ARG APP_VERSION=dev
+ENV APP_VERSION=${APP_VERSION}
+RUN cd packages/frontend && pnpm build
+
+# 创建supervisor配置
+RUN mkdir -p /var/log/supervisor
+COPY scripts/supervisord.conf /etc/supervisord.conf
+
+# 创建启动脚本
+COPY scripts/start-unified.sh /start-unified.sh
+RUN chmod +x /start-unified.sh
+
+EXPOSE 3001 5173 6379
+
+CMD ["/start-unified.sh"]
