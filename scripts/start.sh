@@ -28,4 +28,4 @@ cd /app
 npx tsx packages/backend/src/index.ts &
 
 # 启动前端
-serve -s /app/packages/frontend/dist -l 5173
+serve -s /app/packages/frontend/dist -l tcp://0.0.0.0:5173
