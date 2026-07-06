@@ -30,9 +30,9 @@ RUN mkdir -p /var/log/supervisor
 COPY scripts/supervisord.conf /etc/supervisord.conf
 
 # 创建启动脚本
-COPY scripts/start-unified.sh /start-unified.sh
-RUN chmod +x /start-unified.sh
+COPY scripts/start.sh /start.sh
+RUN chmod +x /start.sh
 
 EXPOSE 3001 5173 6379
 
-CMD ["/start-unified.sh"]
+CMD ["/start.sh"]

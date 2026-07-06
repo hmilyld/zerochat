@@ -6,120 +6,64 @@
 
 ## 功能
 
-- **一次性消息** — 支持文字和图片，AES-256-GCM 加密，查看后自动销毁。可选密码保护、自定义有效期、二维码分享。
-- **加密聊天室** — ECDH-X25519 密钥协商 + AES-256-GCM 逐条加密。服务器盲转发密文，任意一方可销毁房间清除所有记录。
+- **一次性消息** — 支持文字和图片，AES-256-GCM 加密，查看后自动销毁。
+- **加密聊天室** — ECDH-X25519 密钥协商 + AES-256-GCM 逐条加密。
 - **零信任** — 无需注册、无 Cookie、无追踪。密钥永不离开你的设备。
-- **暗色模式** — 明亮/暗黑/随系统切换，偏好持久化。
-- **多语言** — 中文 / English 切换。
-- **移动优先** — 响应式布局，安全区域适配。
 
 ## 技术栈
 
 | 层 | 技术 |
 |----|------|
-| 前端 | React 19, Vite 6, TypeScript, TailwindCSS 4, shadcn/ui, Zustand |
+| 前端 | React 19, Vite 6, TypeScript, TailwindCSS 4, shadcn/ui |
 | 后端 | Node.js 22, Express 5, ws, TypeScript |
 | 存储 | Redis 7 (ioredis) |
-| 加密 | @noble/ciphers (AES-GCM), @noble/curves (X25519), @noble/hashes (HKDF, PBKDF2) |
-| 部署 | Docker (统一镜像 / 三镜像), GitHub Actions CI/CD |
-
-## 项目结构
-
-```
-zerochat/
-├── packages/
-│   ├── shared/        # 前后端共享：加密工具 & 类型定义
-│   ├── backend/       # Express + WebSocket + Redis
-│   └── frontend/      # Vite + React SPA
-├── docker-compose.yml
-└── pnpm-workspace.yaml
-```
+| 加密 | @noble/ciphers (AES-GCM), @noble/curves (X25519) |
 
 ## 快速开始
-
-### 环境要求
-
-- Node.js 22+
-- pnpm 10+
-- Redis（或使用 Docker Compose 内置的）
 
 ### 本地开发
 
 ```bash
-# 安装依赖
 pnpm install
-
-# 配置 Redis 连接
 echo 'REDIS_URL=redis://:your_password@127.0.0.1:6379' > .env.local
-
-# 启动后端（端口 3001）
-pnpm dev:backend
-
-# 启动前端（端口 5173，自动代理 /api 和 /ws 到后端）
-pnpm dev:frontend
+pnpm dev:backend    # 端口 3001
+pnpm dev:frontend   # 端口 5173
 ```
 
-### 生产部署（Docker 统一镜像，推荐）
+### 生产部署（Docker）
 
 ```bash
 echo 'REDIS_PASSWORD=你的密码' > .env
-make docker-unified-up
+make up
 ```
 
-### 生产部署（Docker 三镜像架构）
-
-```bash
-echo 'REDIS_PASSWORD=你的密码' > .env.production
-docker compose --env-file .env.production up -d
-```
-
-端口：前端 5173，后端 3001，Redis 6379。使用反向代理（Nginx/OpenResty/Caddy）配置 HTTPS。
-
-### CI/CD 自动部署
-
-推送代码到 `master` 分支后，GitHub Actions 自动构建并推送 Docker 镜像到 Docker Hub。
-
-**需要配置的 GitHub Secrets：**
-
-| Secret | 说明 |
-|--------|------|
-| `DOCKER_USERNAME` | Docker Hub 用户名 |
-| `DOCKER_PASSWORD` | Docker Hub Access Token |
+所有服务（前端、后端、Redis）运行在单个容器中。端口：5173（前端）、3001（后端）、6379（Redis）。
 
 ### Docker 常用命令
 
 ```bash
-make docker-build         # 构建统一镜像
-make docker-push          # 推送镜像到 Docker Hub
-make docker-deploy        # 部署应用
-make docker-status        # 查看服务状态
-make docker-logs          # 查看日志
-make docker-cleanup       # 清理 Docker 资源
+make up             # 构建并启动
+make build          # 仅构建镜像
+make push           # 推送到 Docker Hub
+make down           # 停止服务
+make logs           # 查看日志
+make clean          # 清理资源
 ```
+
+### CI/CD
+
+推送代码到 `master` 分支后，GitHub Actions 自动构建并推送统一镜像到 Docker Hub（`hmilyld/zerochat`）。
+
+需要配置的 GitHub Secrets：`DOCKER_USERNAME`、`DOCKER_PASSWORD`。
 
 ## 环境变量
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `REDIS_URL` | *必填* | Redis 连接字符串 |
-| `REDIS_PASSWORD` | *必填* | Redis 密码（docker-compose 使用） |
-| `PORT` | 3001 | 后端 HTTP 端口 |
-| `CORS_ORIGIN` | `http://localhost:5173` | 允许的跨域来源 |
-| `MESSAGE_TTL_SECONDS` | 3600 | 一次性消息默认存活时间（秒） |
-| `ROOM_TTL_SECONDS` | 3600 | 聊天室仅有单人时自动销毁时间（秒） |
-| `ROOM_IDLE_SECONDS` | 3600 | 聊天室空闲自动销毁时间（秒） |
-
-配置文件加载顺序：`.env` → `.env.local`（开发） / `.env.production`（生产）。
-
-## 安全机制
-
-- **客户端加密** — 所有密码学运算在浏览器完成，使用 @noble/* 系列库。
-- **ECDH 密钥协商** — X25519 椭圆曲线，HKDF-SHA256 派生会话密钥。
-- **AES-256-GCM** — 认证加密，每条消息独立随机 12 字节 nonce。
-- **URL Fragment 传密** — 一次性消息解密密钥放在 URL hash 中，浏览器不会发送到服务器。
-- **速率限制** — 所有 API 端点均有 IP 级别频率限制。
-- **CSP 策略** — 生产环境在反向代理中配置 Content-Security-Policy 头部。
-- **零追踪** — 无账号系统、无 Cookie、无分析统计。
+| `REDIS_PASSWORD` | *必填* | Redis 密码 |
+| `PORT` | 3001 | 后端端口 |
+| `CORS_ORIGIN` | `http://localhost` | CORS 允许来源 |
+| `MESSAGE_TTL_SECONDS` | 3600 | 一次性消息过期时间（秒） |
 
 ## 许可证
 
