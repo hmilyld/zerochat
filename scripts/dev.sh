@@ -15,7 +15,9 @@ FRONTEND_LOG="$LOG_DIR/zerochat-frontend.log"
 mkdir -p "$PID_DIR"
 
 get_version() {
-  echo "$(git log -1 --format=%cd --date=format:%Y%m%d 2>/dev/null)-$(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')"
+  local date=$(git log -1 --format=%cd --date=format:%Y%m%d 2>/dev/null || echo '00000000')
+  local commit=$(git rev-parse --short=7 HEAD 2>/dev/null || echo 'unknown')
+  echo "v${date}-${commit}"
 }
 
 usage() {
