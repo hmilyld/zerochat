@@ -14,10 +14,26 @@ export default function ChatEntry() {
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState('');
+  const [autoJoined, setAutoJoined] = useState(false);
 
   useEffect(() => {
     const joinId = searchParams.get('join');
-    if (joinId) setRoomInput(joinId);
+    if (joinId && !autoJoined) {
+      setRoomInput(joinId);
+      setAutoJoined(true);
+      // Auto join after setting the room input
+      setTimeout(() => {
+        const roomId = joinId.trim();
+        setJoining(true);
+        fetch(`/api/room/${roomId}/join`, { method: 'POST' })
+          .then(res => {
+            if (!res.ok) return res.json().then(d => { throw new Error(d.error || '加入失败'); });
+            navigate(`/chat/${roomId}`);
+          })
+          .catch(err => setError(err.message))
+          .finally(() => setJoining(false));
+      }, 0);
+    }
   }, []);
 
   async function handleCreate() {
